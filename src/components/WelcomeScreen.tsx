@@ -6,7 +6,7 @@ const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center fade-in">
       <p className="font-body text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
-        A quest crafted for
+        Uma aventura criada para
       </p>
 
       <h2 className="font-heading text-2xl font-bold text-accent mb-6 italic">
@@ -26,18 +26,18 @@ const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
       </h1>
 
       <p className="font-body text-base text-muted-foreground max-w-[260px] leading-relaxed mb-10">
-        8 missions. 3–4 days. One island adventure you won't forget. ✨
+        8 missões. 3–4 dias. Uma aventura na ilha que não vais esquecer. ✨
       </p>
 
       <button
         onClick={onStart}
         className="rounded-lg bg-accent px-8 py-4 font-body text-base font-semibold text-accent-foreground transition-all active:scale-95 shadow-lg shadow-accent/20"
       >
-        Begin Your Quest 💛
+        Começar a Aventura 💛
       </button>
 
       <p className="font-body text-xs text-muted-foreground mt-6 max-w-[220px] italic">
-        Explore, dare, and capture proof along the way.
+        Explora, atreve-te e captura provas pelo caminho.
       </p>
     </div>
   );
