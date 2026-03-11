@@ -5,6 +5,16 @@ interface WelcomeScreenProps {
 const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6 text-center fade-in">
+      <p className="font-body text-xs uppercase tracking-[0.3em] text-muted-foreground mb-2">
+        A quest crafted for
+      </p>
+
+      <h2 className="font-heading text-2xl font-bold text-accent mb-6 italic">
+        Ana Lia Costa
+      </h2>
+
+      <div className="w-12 h-px bg-accent/40 mb-6" />
+
       <p className="font-body text-xs uppercase tracking-[0.3em] text-muted-foreground mb-4">
         Ko Pha Ngan
       </p>
@@ -16,17 +26,17 @@ const WelcomeScreen = ({ onStart }: WelcomeScreenProps) => {
       </h1>
 
       <p className="font-body text-base text-muted-foreground max-w-[260px] leading-relaxed mb-10">
-        8 missions. 3–4 days. One island adventure you won't forget.
+        8 missions. 3–4 days. One island adventure you won't forget. ✨
       </p>
 
       <button
         onClick={onStart}
-        className="rounded-lg bg-primary px-8 py-4 font-body text-base font-semibold text-primary-foreground transition-all active:scale-95"
+        className="rounded-lg bg-accent px-8 py-4 font-body text-base font-semibold text-accent-foreground transition-all active:scale-95 shadow-lg shadow-accent/20"
       >
-        Begin Your Quest
+        Begin Your Quest 💛
       </button>
 
-      <p className="font-body text-xs text-muted-foreground mt-6 max-w-[220px]">
+      <p className="font-body text-xs text-muted-foreground mt-6 max-w-[220px] italic">
         Explore, dare, and capture proof along the way.
       </p>
     </div>
