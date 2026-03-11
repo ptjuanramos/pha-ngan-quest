@@ -9,14 +9,14 @@ const QuestComplete = ({ photos }: QuestCompleteProps) => {
     <div className="min-h-screen px-6 py-16 fade-in">
       <div className="text-center mb-12">
         <h1 className="font-heading text-4xl font-bold text-accent mb-4">
-          Quest Complete! 🌴
+          Aventura Completa! 🌴
         </h1>
         <p className="font-body text-base leading-relaxed text-foreground max-w-xs mx-auto">
-          You explored Ko Pha Ngan, completed all 8 missions, and survived the
-          spicy challenges!
+          Exploraste Ko Pha Ngan, completaste as 8 missões e sobreviveste aos
+          desafios picantes!
         </p>
         <p className="font-body text-sm text-muted-foreground mt-3">
-          Your adventure gallery awaits below.
+          A tua galeria de aventuras espera-te abaixo.
         </p>
       </div>
 
