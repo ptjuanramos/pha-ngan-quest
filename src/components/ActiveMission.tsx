@@ -15,7 +15,20 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      onPhotoUpload(mission.id, reader.result as string);
+      // Compress before passing up to avoid localStorage quota issues
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const maxDim = 800;
+        const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        onPhotoUpload(mission.id, canvas.toDataURL("image/jpeg", 0.7));
+      };
+      img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
