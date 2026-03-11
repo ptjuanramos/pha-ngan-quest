@@ -37,7 +37,7 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
     <div className="flex min-h-screen flex-col justify-center px-6 py-16 fade-in">
       {/* Mission number */}
       <p className="font-body text-sm font-medium uppercase tracking-[0.2em] text-muted-foreground mb-2">
-        Mission {mission.id} of 8
+        Missão {mission.id} de 8
       </p>
 
       {/* Title */}
