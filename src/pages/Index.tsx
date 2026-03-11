@@ -19,7 +19,13 @@ interface GameState {
 function loadState(): GameState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    const base = raw ? JSON.parse(raw) : { started: false, completedCount: 0 };
+    const photos: Record<number, string> = {};
+    for (let i = 1; i <= 8; i++) {
+      const photo = localStorage.getItem(`${STORAGE_KEY}-photo-${i}`);
+      if (photo) photos[i] = photo;
+    }
+    return { ...base, photos };
   } catch {}
   return { started: false, photos: {}, completedCount: 0 };
 }
