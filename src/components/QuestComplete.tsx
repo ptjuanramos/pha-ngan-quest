@@ -30,7 +30,7 @@ const QuestComplete = ({ photos }: QuestCompleteProps) => {
               <div className="aspect-square">
                 <img
                   src={photo}
-                  alt={`Mission ${mission.id}`}
+                  alt={`Missão ${mission.id}`}
                   className="h-full w-full object-cover"
                 />
               </div>

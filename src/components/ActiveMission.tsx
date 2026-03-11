@@ -81,7 +81,7 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
         }`}
       >
         <Camera size={20} />
-        Upload Your Proof
+        Enviar a Tua Prova
       </button>
 
       <input

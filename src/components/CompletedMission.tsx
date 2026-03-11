@@ -23,7 +23,7 @@ const CompletedMission = ({ mission, photo }: CompletedMissionProps) => {
         </div>
 
         <p className="font-body text-sm text-muted-foreground text-center">
-          Mission {mission.id} — {mission.title}
+          Missão {mission.id} — {mission.title}
         </p>
       </div>
     </div>

@@ -31,7 +31,7 @@ const LockedMission = ({ missionNumber, isSpicy }: LockedMissionProps) => {
           className={isSpicy ? "text-accent" : "text-foreground"}
         />
         <span className="font-heading text-lg font-semibold tracking-wide text-foreground">
-          Mission {missionNumber}
+          Missão {missionNumber}
         </span>
       </div>
     </div>
