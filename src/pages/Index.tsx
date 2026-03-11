@@ -25,7 +25,38 @@ function loadState(): GameState {
 }
 
 function saveState(state: GameState) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  try {
+    // Save progress without photos (photos stored individually)
+    const { photos, ...rest } = state;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
+    // Store each photo separately
+    for (const [id, data] of Object.entries(photos)) {
+      try {
+        localStorage.setItem(`${STORAGE_KEY}-photo-${id}`, data);
+      } catch {
+        // If quota exceeded, store as compressed thumbnail
+        compressAndStore(Number(id), data);
+      }
+    }
+  } catch {}
+}
+
+function compressAndStore(missionId: number, dataUrl: string) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement("canvas");
+    const maxDim = 400;
+    const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
+    canvas.width = img.width * scale;
+    canvas.height = img.height * scale;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    try {
+      localStorage.setItem(`${STORAGE_KEY}-photo-${missionId}`, canvas.toDataURL("image/jpeg", 0.5));
+    } catch {}
+  };
+  img.src = dataUrl;
 }
 
 const Index = () => {
