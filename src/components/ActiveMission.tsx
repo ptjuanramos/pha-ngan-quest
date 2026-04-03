@@ -41,13 +41,21 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
       </p>
 
       {/* Title */}
-      <h2
-        className={`font-heading text-3xl font-bold mb-6 ${
-          mission.isSpicy ? "text-accent" : "text-foreground"
-        }`}
-      >
-        {mission.title}
-      </h2>
+      <div className="flex items-center gap-3 mb-6">
+        <h2
+          className={`font-heading text-3xl font-bold ${
+            mission.isSpicy ? "text-accent" : "text-foreground"
+          }`}
+        >
+          {mission.title}
+        </h2>
+        {mission.isSpicy && (
+          <div className="flex items-center gap-1 rounded-full bg-accent/15 px-2.5 py-1 text-accent">
+            <Flame size={16} />
+            <span className="font-body text-xs font-bold">+18</span>
+          </div>
+        )}
+      </div>
 
       {/* Clue */}
       <blockquote
