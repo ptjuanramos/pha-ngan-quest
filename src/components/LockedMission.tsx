@@ -1,4 +1,4 @@
-import { Lock } from "lucide-react";
+import { Lock, Flame } from "lucide-react";
 
 interface LockedMissionProps {
   missionNumber: number;
@@ -33,6 +33,12 @@ const LockedMission = ({ missionNumber, isSpicy }: LockedMissionProps) => {
         <span className="font-heading text-lg font-semibold tracking-wide text-foreground">
           Missão {missionNumber}
         </span>
+        {isSpicy && (
+          <div className="flex items-center gap-1.5 text-accent">
+            <Flame size={18} />
+            <span className="font-body text-xs font-bold uppercase tracking-wider">+18</span>
+          </div>
+        )}
       </div>
     </div>
   );
