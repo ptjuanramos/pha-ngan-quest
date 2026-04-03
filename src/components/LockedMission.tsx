@@ -1,4 +1,4 @@
-import { Lock } from "lucide-react";
+import { Lock, Flame } from "lucide-react";
 
 interface LockedMissionProps {
   missionNumber: number;
