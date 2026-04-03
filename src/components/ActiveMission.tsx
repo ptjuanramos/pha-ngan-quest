@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Camera, MapPin } from "lucide-react";
+import { Camera, MapPin, Flame } from "lucide-react";
 import type { Mission } from "@/data/missions";
 
 interface ActiveMissionProps {
