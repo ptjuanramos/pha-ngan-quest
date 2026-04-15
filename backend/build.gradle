@@ -1,0 +1,75 @@
+plugins {
+    id 'io.micronaut.application' version '4.6.2'
+}
+
+version = '0.1'
+group = 'com.kpnquest'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    annotationProcessor 'io.micronaut:micronaut-http-validation'
+    annotationProcessor 'io.micronaut.data:micronaut-data-processor'
+    annotationProcessor 'io.micronaut.security:micronaut-security-annotations'
+    annotationProcessor 'io.micronaut.validation:micronaut-validation-processor'
+
+    implementation 'io.micronaut:micronaut-http-server-netty'
+    implementation 'io.micronaut:micronaut-jackson-databind'
+    implementation 'io.micronaut.data:micronaut-data-jdbc'
+    implementation 'io.micronaut.flyway:micronaut-flyway'
+    implementation 'io.micronaut.security:micronaut-security-jwt'
+    implementation 'io.micronaut.sql:micronaut-jdbc-hikari'
+    implementation 'io.micronaut.validation:micronaut-validation'
+    implementation 'io.micronaut.security:micronaut-security'
+
+    implementation 'jakarta.validation:jakarta.validation-api'
+
+    runtimeOnly 'ch.qos.logback:logback-classic'
+    runtimeOnly 'com.microsoft.sqlserver:mssql-jdbc:12.4.2.jre11'
+    runtimeOnly 'org.flywaydb:flyway-sqlserver'
+
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter-api'
+    testImplementation 'org.assertj:assertj-core'
+
+    testImplementation 'org.testcontainers:testcontainers:2.0.4'
+    testImplementation 'org.testcontainers:testcontainers-junit-jupiter:2.0.4'
+    testImplementation 'org.testcontainers:mssqlserver:1.21.4'
+
+    testImplementation 'io.micronaut.test:micronaut-test-junit5'
+    testImplementation 'io.micronaut:micronaut-http-client'
+
+    runtimeOnly 'org.yaml:snakeyaml'
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+}
+
+application {
+    mainClass = 'com.kpnquest.Application'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+
+micronaut {
+    version '4.3.3'
+    runtime 'netty'
+    testRuntime 'junit5'
+    processing {
+        incremental true
+        annotations 'com.kpnquest.*'
+    }
+}
+
+configurations.all {
+    resolutionStrategy {
+        force 'org.testcontainers:testcontainers:2.0.4'
+        force 'org.testcontainers:testcontainers-junit-jupiter:2.0.4'
+        force 'org.testcontainers:mssqlserver:1.21.4'
+    }
+}

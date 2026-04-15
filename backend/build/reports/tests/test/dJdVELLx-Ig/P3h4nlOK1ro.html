@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - sameDevice_returnsSamePlayerId()</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<div class="breadcrumbs">
+<a class="breadcrumb" href="../index.html">all</a> &gt; 
+<a class="breadcrumb" href="index.html">com.kpnquest.identifyplayer.IdentifyPlayerIT</a> &gt; 
+<span class="breadcrumb">sameDevice_returnsSamePlayerId()</span>
+</div>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a class="failureGroup" href="#">Gradle Test Run :test</a>
+</li>
+</ul>
+<div class="tab">
+<h2>Gradle Test Run :test</h2>
+<h1>sameDevice_returnsSamePlayerId()</h1>
+<div class="tab-container">
+<ul class="tabLinks">
+<li>
+<a class="" href="#">summary</a>
+</li>
+<li>
+<a class="" href="#">standard output</a>
+</li>
+</ul>
+<div class="tab">
+<h2>summary</h2>
+<div>
+<div class="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox">
+<div class="counter">1</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox">
+<div class="counter">1</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox">
+<div class="counter">0</div>
+<p>skipped</p>
+</div>
+</td>
+<td>
+<div class="infoBox duration">
+<div class="counter">0.033s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox failures successRate">
+<div class="percent">0%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="result-details">
+<h3>Failure details</h3>
+<span class="code">
+<pre id="root-0-test-failure-sameDevice_returnsSamePlayerId()">io.micronaut.http.client.exceptions.HttpClientResponseException: Bad Request
+	at io.micronaut.http.client.netty.DefaultHttpClient$FullHttpResponseHandler.makeErrorFromRequestBody(DefaultHttpClient.java:2259)
+	at io.micronaut.http.client.netty.DefaultHttpClient$FullHttpResponseHandler.forwardResponseToPromise(DefaultHttpClient.java:2210)
+	at io.micronaut.http.client.netty.DefaultHttpClient$FullHttpResponseHandler.channelReadInstrumented(DefaultHttpClient.java:2179)
+	at io.micronaut.http.client.netty.DefaultHttpClient$FullHttpResponseHandler.channelReadInstrumented(DefaultHttpClient.java:2147)
+	at io.micronaut.http.client.netty.SimpleChannelInboundHandlerInstrumented.channelRead0(SimpleChannelInboundHandlerInstrumented.java:46)
+	at io.netty.channel.SimpleChannelInboundHandler.channelRead(SimpleChannelInboundHandler.java:99)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.codec.MessageToMessageDecoder.channelRead(MessageToMessageDecoder.java:103)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.codec.MessageToMessageDecoder.channelRead(MessageToMessageDecoder.java:103)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.CombinedChannelDuplexHandler$DelegatingChannelHandlerContext.fireChannelRead(CombinedChannelDuplexHandler.java:436)
+	at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+	at io.netty.channel.CombinedChannelDuplexHandler.channelRead(CombinedChannelDuplexHandler.java:251)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.ChannelInboundHandlerAdapter.channelRead(ChannelInboundHandlerAdapter.java:93)
+	at io.micronaut.http.client.netty.ResettableReadTimeoutHandler$NextInterceptor.channelRead(ResettableReadTimeoutHandler.java:92)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.timeout.IdleStateHandler.channelRead(IdleStateHandler.java:289)
+	at io.micronaut.http.client.netty.ResettableReadTimeoutHandler.channelRead(ResettableReadTimeoutHandler.java:64)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+	Suppressed: java.lang.Exception: #block terminated with an error
+		at reactor.core.publisher.BlockingSingleSubscriber.blockingGet(BlockingSingleSubscriber.java:103)
+		at reactor.core.publisher.Flux.blockFirst(Flux.java:2707)
+		at io.micronaut.http.client.netty.DefaultHttpClient$1.exchange(DefaultHttpClient.java:571)
+		at io.micronaut.http.client.netty.DefaultHttpClient$1.retrieve(DefaultHttpClient.java:578)
+		at io.micronaut.http.client.BlockingHttpClient.retrieve(BlockingHttpClient.java:122)
+		at io.micronaut.http.client.BlockingHttpClient.retrieve(BlockingHttpClient.java:171)
+		at io.micronaut.http.client.BlockingHttpClient.retrieve(BlockingHttpClient.java:184)
+		at com.kpnquest.identifyplayer.IdentifyPlayerIT.sameDevice_returnsSamePlayerId(IdentifyPlayerIT.java:51)
+		at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+		at io.micronaut.test.extensions.junit5.MicronautJunit5Extension$2.proceed(MicronautJunit5Extension.java:142)
+		at io.micronaut.test.extensions.AbstractMicronautExtension.interceptEach(AbstractMicronautExtension.java:157)
+		at io.micronaut.test.extensions.AbstractMicronautExtension.interceptTest(AbstractMicronautExtension.java:114)
+		at io.micronaut.test.extensions.junit5.MicronautJunit5Extension.interceptTestMethod(MicronautJunit5Extension.java:129)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+		at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+</pre>
+<button class="clipboard-copy-btn" aria-label="Copy to clipboard" data-copy-element-id="root-0-test-failure-sameDevice_returnsSamePlayerId()">Copy</button>
+</span>
+</div>
+</div>
+</div>
+<div class="tab">
+<h2>standard output</h2>
+<span class="code">
+<pre id="root-0-test-stdout-sameDevice_returnsSamePlayerId()">01:03:23.185 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for instance: com.kpnquest.identifyplayer.IdentifyPlayerIT@5256fbc
+01:03:23.185 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: HttpClient client
+01:03:23.186 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.client.netty.DefaultHttpClient null Definition: io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry
+01:03:23.186 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry] for type: client 
+01:03:23.186 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: DefaultNettyHttpClientRegistry
+01:03:23.186 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry null Definition: io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry
+01:03:23.186 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry] for type: defaultNettyHttpClientRegistry 
+01:03:23.186 [Test worker] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.http.client.netty.DefaultHttpClient@5e7cd0df] from definition [Definition: io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry] with qualifier [null]
+01:03:23.186 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: HttpClient
+01:03:23.187 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.client.netty.DefaultHttpClient null Definition: io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry
+01:03:23.187 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.client.netty.DefaultNettyHttpClientRegistry] for type: httpClient 
+01:03:23.187 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ObjectMapper
+01:03:23.187 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext --   class com.fasterxml.jackson.databind.ObjectMapper @Primary and @Named('json') Definition: io.micronaut.jackson.ObjectMapperFactory
+01:03:23.187 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.jackson.ObjectMapperFactory] for type: objectMapper 
+01:03:23.190 [default-nioEventLoopGroup-3-2] DEBUG io.micronaut.http.client.netty.DefaultHttpClient -- Sending HTTP POST to http://localhost:8081/api/v1/players/identify
+01:03:23.190 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.http.server.netty.NettyRequestLifecycle -- Request POST /api/v1/players/identify
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: CorsConfiguration corsConfiguration
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.HttpServerConfiguration$CorsConfiguration null Definition: io.micronaut.http.server.HttpServerConfiguration$CorsConfiguration
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.server.HttpServerConfiguration$CorsConfiguration] for type: corsConfiguration 
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.http.server.HttpServerConfiguration$CorsConfiguration@3121f628] from definition [Definition: io.micronaut.http.server.HttpServerConfiguration$CorsConfiguration] with qualifier [null]
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: HttpHostResolver httpHostResolver
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.util.DefaultHttpHostResolver null Definition: io.micronaut.http.server.util.DefaultHttpHostResolver
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.server.util.DefaultHttpHostResolver] for type: httpHostResolver 
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: HttpServerConfiguration serverConfiguration
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Bean [class io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration] replaces existing bean of type [class io.micronaut.http.server.HttpServerConfiguration]
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration null Definition: io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration] for type: serverConfiguration 
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: BeanProvider embeddedServer
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   interface io.micronaut.context.BeanProvider null io.micronaut.inject.provider.BeanProviderDefinition@71926241
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [io.micronaut.inject.provider.BeanProviderDefinition@71926241] for type: embeddedServer 
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.inject.provider.BeanProviderDefinition$1@74236e68] from definition [io.micronaut.inject.provider.BeanProviderDefinition@71926241] with qualifier [null]
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.http.server.util.DefaultHttpHostResolver@3e71ee9] from definition [Definition: io.micronaut.http.server.util.DefaultHttpHostResolver] with qualifier [null]
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.http.server.cors.CorsFilter@459dde3a] from definition [Definition: io.micronaut.http.server.cors.CorsFilter] with qualifier [null]
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.rules.SecurityRule&lt;io.micronaut.http.HttpRequest&lt;java.lang.Object&gt;&gt;
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SecurityRule E
+01:03:23.191 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RolesFinder
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.DefaultRolesFinder null Definition: io.micronaut.security.token.DefaultRolesFinder
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SecurityConfiguration
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.config.SecurityConfigurationProperties null Definition: io.micronaut.security.config.SecurityConfigurationProperties
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: InterceptUrlPatternModifier
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ServerContextPathProvider
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Bean [class io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration] replaces existing bean of type [class io.micronaut.http.server.HttpServerConfiguration]
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration null Definition: io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.config.DefaultInterceptUrlPatternModifier null Definition: io.micronaut.security.config.DefaultInterceptUrlPatternModifier
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.rules.ConfigurationInterceptUrlMapRule null Definition: io.micronaut.security.rules.ConfigurationInterceptUrlMapRule
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.rules.SensitiveEndpointRule null Definition: io.micronaut.security.rules.SensitiveEndpointRule
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.rules.IpPatternsRule null Definition: io.micronaut.security.rules.IpPatternsRule
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.rules.SecuredAnnotationRule null Definition: io.micronaut.security.rules.SecuredAnnotationRule
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RolesFinder rolesFinder
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.DefaultRolesFinder null Definition: io.micronaut.security.token.DefaultRolesFinder
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.DefaultRolesFinder] for type: rolesFinder 
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: TokenConfiguration tokenConfiguration
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.config.TokenConfigurationProperties null Definition: io.micronaut.security.token.config.TokenConfigurationProperties
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.config.TokenConfigurationProperties] for type: tokenConfiguration 
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.config.TokenConfigurationProperties@7bb3f017] from definition [Definition: io.micronaut.security.token.config.TokenConfigurationProperties] with qualifier [null]
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.DefaultRolesFinder@140c9127] from definition [Definition: io.micronaut.security.token.DefaultRolesFinder] with qualifier [null]
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SecurityConfiguration securityConfiguration
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.config.SecurityConfigurationProperties null Definition: io.micronaut.security.config.SecurityConfigurationProperties
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.config.SecurityConfigurationProperties] for type: securityConfiguration 
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.config.SecurityConfigurationProperties@2f27d519] from definition [Definition: io.micronaut.security.config.SecurityConfigurationProperties] with qualifier [null]
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: InterceptUrlPatternModifier interceptUrlPatternModifier
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.config.DefaultInterceptUrlPatternModifier null Definition: io.micronaut.security.config.DefaultInterceptUrlPatternModifier
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.config.DefaultInterceptUrlPatternModifier] for type: interceptUrlPatternModifier 
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ServerContextPathProvider serverContextPathProvider
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Bean [class io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration] replaces existing bean of type [class io.micronaut.http.server.HttpServerConfiguration]
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration null Definition: io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.server.netty.configuration.NettyHttpServerConfiguration] for type: serverContextPathProvider 
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.config.DefaultInterceptUrlPatternModifier@4e0b2c9] from definition [Definition: io.micronaut.security.config.DefaultInterceptUrlPatternModifier] with qualifier [null]
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.rules.ConfigurationInterceptUrlMapRule@60b7d90a] from definition [Definition: io.micronaut.security.rules.ConfigurationInterceptUrlMapRule] with qualifier [null]
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.rules.ConfigurationInterceptUrlMapRule@60b7d90a for candidate: Definition: io.micronaut.security.rules.ConfigurationInterceptUrlMapRule with qualifier: null
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: EndpointSensitivityProcessor endpointSensitivityProcessor
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.management.endpoint.EndpointSensitivityProcessor null Definition: io.micronaut.management.endpoint.EndpointSensitivityProcessor
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.management.endpoint.EndpointSensitivityProcessor] for type: endpointSensitivityProcessor 
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.management.endpoint.EndpointConfiguration
+01:03:23.192 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: EndpointConfiguration E
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: EndpointConfiguration E
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: EndpointDefaultConfiguration defaultConfiguration
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.management.endpoint.EndpointDefaultConfiguration null Definition: io.micronaut.management.endpoint.EndpointDefaultConfiguration
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.management.endpoint.EndpointDefaultConfiguration] for type: defaultConfiguration 
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for qualifier: @Endpoint
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- Bean [Definition: io.micronaut.management.endpoint.loggers.LoggersEndpoint] will not be loaded due to failing conditions:
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- * Custom condition [class io.micronaut.management.endpoint.EndpointEnabledCondition] failed evaluation
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- Bean [Definition: io.micronaut.management.endpoint.stop.ServerStopEndpoint] will not be loaded due to failing conditions:
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- * Custom condition [class io.micronaut.management.endpoint.EndpointEnabledCondition] failed evaluation
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- Bean [Definition: io.micronaut.management.endpoint.env.EnvironmentEndpoint] will not be loaded due to failing conditions:
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- * Custom condition [class io.micronaut.management.endpoint.EndpointEnabledCondition] failed evaluation
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.management.endpoint.EndpointSensitivityProcessor@1042e992] from definition [Definition: io.micronaut.management.endpoint.EndpointSensitivityProcessor] with qualifier [null]
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.rules.SensitiveEndpointRule@1dc699e] from definition [Definition: io.micronaut.security.rules.SensitiveEndpointRule] with qualifier [null]
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.rules.SensitiveEndpointRule@1dc699e for candidate: Definition: io.micronaut.security.rules.SensitiveEndpointRule with qualifier: null
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.rules.IpPatternsRule@2bf596] from definition [Definition: io.micronaut.security.rules.IpPatternsRule] with qualifier [null]
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.rules.IpPatternsRule@2bf596 for candidate: Definition: io.micronaut.security.rules.IpPatternsRule with qualifier: null
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.rules.SecuredAnnotationRule@5e0a0310] from definition [Definition: io.micronaut.security.rules.SecuredAnnotationRule] with qualifier [null]
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.rules.SecuredAnnotationRule@5e0a0310 for candidate: Definition: io.micronaut.security.rules.SecuredAnnotationRule with qualifier: null
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.filters.AuthenticationFetcher&lt;io.micronaut.http.HttpRequest&lt;java.lang.Object&gt;&gt;
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: AuthenticationFetcher E
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.TokenAuthenticationFetcher null Definition: io.micronaut.security.token.TokenAuthenticationFetcher
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.authentication.BasicAuthAuthenticationFetcher null Definition: io.micronaut.security.authentication.BasicAuthAuthenticationFetcher
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.token.validator.TokenValidator&lt;io.micronaut.http.HttpRequest&lt;java.lang.Object&gt;&gt;
+01:03:23.193 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: TokenValidator E
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.validator.JwtTokenValidator null Definition: io.micronaut.security.token.jwt.validator.JwtTokenValidator
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.token.jwt.signature.SignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SignatureConfiguration E
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ECSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ECSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SecretSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.signature.secret.SecretSignatureConfiguration @Named('generator') Definition: io.micronaut.security.token.jwt.signature.secret.SecretSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ECSignatureGeneratorConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ECSignatureGeneratorConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: JwksSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: JwksSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ResourceLoader
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   interface io.micronaut.core.io.scan.ClassPathResourceLoader null Definition: io.micronaut.http.resource.ResourceLoaderFactory
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.context.env.DefaultEnvironment @Primary io.micronaut.context.DefaultRuntimeBeanDefinition@839755f
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   interface io.micronaut.core.io.file.FileSystemResourceLoader null Definition: io.micronaut.http.resource.ResourceLoaderFactory
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: StaticJwksSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: StaticJwksSignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RSASignatureGeneratorConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: RSASignatureGeneratorConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RSASignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: RSASignatureConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.signature.secret.SecretSignature @Named('generator') Definition: io.micronaut.security.token.jwt.signature.secret.SecretSignature
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.jwt.signature.secret.SecretSignature@59837f3a] from definition [Definition: io.micronaut.security.token.jwt.signature.secret.SecretSignature] with qualifier [@Named('generator')]
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.token.jwt.signature.secret.SecretSignature@59837f3a for candidate: Definition: io.micronaut.security.token.jwt.signature.secret.SecretSignature with qualifier: null
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.token.jwt.encryption.EncryptionConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: EncryptionConfiguration E
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SecretEncryptionConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: SecretEncryptionConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RSAEncryptionConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: RSAEncryptionConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ECEncryptionConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ECEncryptionConfiguration
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: EncryptionConfiguration E
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.token.jwt.validator.GenericJwtClaimsValidator&lt;java.lang.Object&gt;
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: GenericJwtClaimsValidator E
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.validator.SubjectNotNullJwtClaimsValidator null Definition: io.micronaut.security.token.jwt.validator.SubjectNotNullJwtClaimsValidator
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.validator.ExpirationJwtClaimsValidator null Definition: io.micronaut.security.token.jwt.validator.ExpirationJwtClaimsValidator
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.jwt.validator.SubjectNotNullJwtClaimsValidator@3b716d0d] from definition [Definition: io.micronaut.security.token.jwt.validator.SubjectNotNullJwtClaimsValidator] with qualifier [null]
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.token.jwt.validator.SubjectNotNullJwtClaimsValidator@3b716d0d for candidate: Definition: io.micronaut.security.token.jwt.validator.SubjectNotNullJwtClaimsValidator with qualifier: null
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.jwt.validator.ExpirationJwtClaimsValidator@64a9b8b0] from definition [Definition: io.micronaut.security.token.jwt.validator.ExpirationJwtClaimsValidator] with qualifier [null]
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.token.jwt.validator.ExpirationJwtClaimsValidator@64a9b8b0 for candidate: Definition: io.micronaut.security.token.jwt.validator.ExpirationJwtClaimsValidator with qualifier: null
+01:03:23.194 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: JwtAuthenticationFactory jwtAuthenticationFactory
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.validator.DefaultJwtAuthenticationFactory null Definition: io.micronaut.security.token.jwt.validator.DefaultJwtAuthenticationFactory
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.jwt.validator.DefaultJwtAuthenticationFactory] for type: jwtAuthenticationFactory 
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.jwt.validator.DefaultJwtAuthenticationFactory@6ab535b6] from definition [Definition: io.micronaut.security.token.jwt.validator.DefaultJwtAuthenticationFactory] with qualifier [null]
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.jwt.validator.JwtTokenValidator@280dfd75] from definition [Definition: io.micronaut.security.token.jwt.validator.JwtTokenValidator] with qualifier [null]
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.token.jwt.validator.JwtTokenValidator@280dfd75 for candidate: Definition: io.micronaut.security.token.jwt.validator.JwtTokenValidator with qualifier: null
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: TokenResolver tokenResolver
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.reader.DefaultTokenResolver null Definition: io.micronaut.security.token.reader.DefaultTokenResolver
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.reader.DefaultTokenResolver] for type: tokenResolver 
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.token.reader.TokenReader&lt;io.micronaut.http.HttpRequest&lt;java.lang.Object&gt;&gt;
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: TokenReader E
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.security.authentication.AuthenticationModeCondition -- CookieBasedAuthenticationModeCondition} is not fulfilled because micronaut.security.authentication is not set.
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- Bean [Definition: io.micronaut.security.token.cookie.CookieTokenReader] will not be loaded due to failing conditions:
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- * Custom condition [class io.micronaut.security.authentication.CookieBasedAuthenticationModeCondition] failed evaluation
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.security.authentication.AuthenticationModeCondition -- CookieBasedAuthenticationModeCondition} is not fulfilled because micronaut.security.authentication is not set.
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- Bean [Definition: io.micronaut.security.token.cookie.TokenCookieTokenReader] will not be loaded due to failing conditions:
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- * Custom condition [class io.micronaut.security.authentication.CookieBasedAuthenticationModeCondition] failed evaluation
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.bearer.BearerTokenReader null Definition: io.micronaut.security.token.bearer.BearerTokenReader
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: BearerTokenConfiguration bearerTokenConfiguration
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.bearer.BearerTokenConfigurationProperties null Definition: io.micronaut.security.token.bearer.BearerTokenConfigurationProperties
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.bearer.BearerTokenConfigurationProperties] for type: bearerTokenConfiguration 
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.bearer.BearerTokenConfigurationProperties@1824e47c] from definition [Definition: io.micronaut.security.token.bearer.BearerTokenConfigurationProperties] with qualifier [null]
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.bearer.BearerTokenReader@31e1b3f0] from definition [Definition: io.micronaut.security.token.bearer.BearerTokenReader] with qualifier [null]
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.token.bearer.BearerTokenReader@31e1b3f0 for candidate: Definition: io.micronaut.security.token.bearer.BearerTokenReader with qualifier: null
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.reader.DefaultTokenResolver@72ba38ff] from definition [Definition: io.micronaut.security.token.reader.DefaultTokenResolver] with qualifier [null]
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ApplicationEventPublisher tokenValidatedEventPublisher
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   interface io.micronaut.context.event.ApplicationEventPublisher null io.micronaut.context.event.ApplicationEventPublisherFactory@53c043a3
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [io.micronaut.context.event.ApplicationEventPublisherFactory@53c043a3] for type: tokenValidatedEventPublisher 
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.context.event.ApplicationEventPublisherFactory$2@351b9588] from definition [io.micronaut.context.event.ApplicationEventPublisherFactory@53c043a3] with qualifier [null]
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.TokenAuthenticationFetcher@a238053] from definition [Definition: io.micronaut.security.token.TokenAuthenticationFetcher] with qualifier [null]
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.token.TokenAuthenticationFetcher@a238053 for candidate: Definition: io.micronaut.security.token.TokenAuthenticationFetcher with qualifier: null
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: Authenticator authenticator
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.authentication.Authenticator null Definition: io.micronaut.security.authentication.Authenticator
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.authentication.Authenticator] for type: authenticator 
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.authentication.provider.ReactiveAuthenticationProvider&lt;java.lang.Object,java.lang.Object,java.lang.Object&gt;
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ReactiveAuthenticationProvider E
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ReactiveAuthenticationProvider E
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.authentication.provider.AuthenticationProvider&lt;java.lang.Object,java.lang.Object,java.lang.Object&gt;
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: AuthenticationProvider E
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: AuthenticationProvider E
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: io.micronaut.security.authentication.AuthenticationProvider&lt;java.lang.Object&gt;
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: AuthenticationProvider E
+01:03:23.196 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: AuthenticationProvider E
+01:03:23.199 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.authentication.Authenticator@36e1dcd4] from definition [Definition: io.micronaut.security.authentication.Authenticator] with qualifier [null]
+01:03:23.199 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.authentication.BasicAuthAuthenticationFetcher@15bf6737] from definition [Definition: io.micronaut.security.authentication.BasicAuthAuthenticationFetcher] with qualifier [null]
+01:03:23.199 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.security.authentication.BasicAuthAuthenticationFetcher@15bf6737 for candidate: Definition: io.micronaut.security.authentication.BasicAuthAuthenticationFetcher with qualifier: null
+01:03:23.199 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.filters.SecurityFilter@7c6107dd] from definition [Definition: io.micronaut.security.filters.SecurityFilter] with qualifier [null]
+01:03:23.199 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.security.token.reader.HttpHeaderTokenReader -- Looking for bearer token in Authorization header
+01:03:23.200 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.security.token.reader.DefaultTokenResolver -- Request POST, /api/v1/players/identify, no token found.
+01:03:23.200 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.security.rules.IpPatternsRule -- One or more of the IP patterns matched the host address [127.0.0.1]. Continuing request processing.
+01:03:23.200 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.security.rules.AbstractSecurityRule -- The given roles [[isAnonymous()]] matched one or more of the required roles [[isAnonymous()]]. Allowing the request
+01:03:23.200 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.security.filters.SecurityFilter -- Authorized request POST /api/v1/players/identify. The rule provider io.micronaut.security.rules.SecuredAnnotationRule authorized the request.
+01:03:23.200 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- No BeanIntrospection found for bean type: class com.kpnquest.identifyplayer.IdentifyPlayerRequest
+01:03:23.200 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- No BeanIntrospection found for bean type: class com.kpnquest.identifyplayer.IdentifyPlayerRequest
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: IdentifyPlayerService service
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class com.kpnquest.identifyplayer.IdentifyPlayerService null Definition: com.kpnquest.identifyplayer.IdentifyPlayerService
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: com.kpnquest.identifyplayer.IdentifyPlayerService] for type: service 
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: PlayerRepository playerRepository
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class com.kpnquest.identifyplayer.PlayerRepository$Intercepted null Definition: com.kpnquest.identifyplayer.PlayerRepository$Intercepted
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: com.kpnquest.identifyplayer.PlayerRepository$Intercepted] for type: playerRepository 
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: @InterceptorBinding(io.micronaut.data.annotation.Repository) io.micronaut.aop.Interceptor 
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.reflect.ClassUtils -- Attempting to dynamically load class io.micronaut.context.annotation.Prototype
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.reflect.ClassUtils -- Successfully loaded class io.micronaut.context.annotation.Prototype
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: DataInterceptorResolver dataInterceptorResolver
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.data.runtime.intercept.DataInterceptorResolver null Definition: io.micronaut.data.runtime.intercept.DataInterceptorResolver
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.data.runtime.intercept.DataInterceptorResolver] for type: dataInterceptorResolver 
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RepositoryOperationsRegistry repositoryOperationsRegistry
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.data.runtime.operations.DefaultRepositoryOperationsRegistry null Definition: io.micronaut.data.runtime.operations.DefaultRepositoryOperationsRegistry
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.data.runtime.operations.DefaultRepositoryOperationsRegistry] for type: repositoryOperationsRegistry 
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.data.runtime.operations.DefaultRepositoryOperationsRegistry@6ad6311a] from definition [Definition: io.micronaut.data.runtime.operations.DefaultRepositoryOperationsRegistry] with qualifier [null]
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: DataSourceTenantResolver tenantResolver
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: TenantResolver
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: TenantResolver
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- Bean [Definition: io.micronaut.data.runtime.multitenancy.internal.DefaultDataSourceTenantResolver] will not be loaded due to failing conditions:
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.condition.Condition -- * No bean of type [io.micronaut.data.runtime.multitenancy.TenantResolver] present within context
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: DataSourceTenantResolver tenantResolver
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.data.runtime.intercept.DataInterceptorResolver@52e957e8] from definition [Definition: io.micronaut.data.runtime.intercept.DataInterceptorResolver] with qualifier [null]
+01:03:23.201 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: DataConversionService conversionService
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.data.runtime.convert.DataConversionServiceImpl null Definition: io.micronaut.data.runtime.convert.DataConversionServiceFactory
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.data.runtime.convert.DataConversionServiceFactory] for type: conversionService 
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.data.runtime.intercept.DataIntroductionAdvice@3c81145d] from definition [Definition: io.micronaut.data.runtime.intercept.DataIntroductionAdvice] with qualifier [null]
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.data.runtime.intercept.DataIntroductionAdvice@3c81145d for candidate: Definition: io.micronaut.data.runtime.intercept.DataIntroductionAdvice with qualifier: @InterceptorBinding(io.micronaut.data.annotation.Repository)
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found 1 bean registrations for type [@InterceptorBinding(io.micronaut.data.annotation.Repository) T]
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   Definition: io.micronaut.data.runtime.intercept.DataIntroductionAdvice null
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: InterceptorRegistry $interceptorRegistry
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   interface io.micronaut.aop.InterceptorRegistry null io.micronaut.aop.internal.InterceptorRegistryBean@57fce8b
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [io.micronaut.aop.internal.InterceptorRegistryBean@57fce8b] for type: $interceptorRegistry 
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [com.kpnquest.identifyplayer.PlayerRepository$Intercepted@48aaa3ff] from definition [Definition: com.kpnquest.identifyplayer.PlayerRepository$Intercepted] with qualifier [null]
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: TokenGenerator tokenGenerator
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.generator.JwtTokenGenerator null Definition: io.micronaut.security.token.jwt.generator.JwtTokenGenerator
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.jwt.generator.JwtTokenGenerator] for type: tokenGenerator 
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SignatureGeneratorConfiguration signatureConfiguration
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SecretSignatureConfiguration
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.signature.secret.SecretSignatureConfiguration @Named('generator') Definition: io.micronaut.security.token.jwt.signature.secret.SecretSignatureConfiguration
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ECSignatureGeneratorConfiguration
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ECSignatureGeneratorConfiguration
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RSASignatureGeneratorConfiguration
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: RSASignatureGeneratorConfiguration
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.signature.secret.SecretSignature @Named('generator') Definition: io.micronaut.security.token.jwt.signature.secret.SecretSignature
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Qualifying bean [signatureConfiguration] for qualifier: @Named('generator') 
+01:03:23.202 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.jwt.signature.secret.SecretSignature] for type: @Named('generator') signatureConfiguration 
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: EncryptionConfiguration encryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: SecretEncryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: SecretEncryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: RSAEncryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: RSAEncryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ECEncryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ECEncryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: EncryptionConfiguration encryptionConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ClaimsGenerator claimsGenerator
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator null Definition: io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator] for type: claimsGenerator 
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: JtiGenerator jwtIdGenerator
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: JtiGenerator jwtIdGenerator
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ClaimsAudienceProvider claimsAudienceProvider
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ClaimsAudienceProvider claimsAudienceProvider
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ApplicationConfiguration applicationConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.runtime.ApplicationConfiguration null Definition: io.micronaut.runtime.ApplicationConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.runtime.ApplicationConfiguration] for type: applicationConfiguration 
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator@13af1511] from definition [Definition: io.micronaut.security.token.jwt.generator.claims.JWTClaimsSetGenerator] with qualifier [null]
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.security.token.jwt.generator.JwtTokenGenerator@b61569b] from definition [Definition: io.micronaut.security.token.jwt.generator.JwtTokenGenerator] with qualifier [null]
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [com.kpnquest.identifyplayer.IdentifyPlayerService@3f769856] from definition [Definition: com.kpnquest.identifyplayer.IdentifyPlayerService] with qualifier [null]
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: @InterceptorBinding(io.micronaut.validation.Validated)@InterceptorBinding(interceptorType = class io.micronaut.validation.ValidatingInterceptor) io.micronaut.aop.Interceptor 
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: Validator micronautValidator
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.validation.validator.DefaultValidator null Definition: io.micronaut.validation.validator.DefaultValidator
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.validation.validator.DefaultValidator] for type: micronautValidator 
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ValidatorFactory validatorFactory
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ValidatorFactory
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- No bean candidates found for type: ValidatorFactory
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.validation.validator.DefaultValidatorFactory null Definition: io.micronaut.validation.validator.DefaultValidatorFactory
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.validation.validator.DefaultValidatorFactory] for type: validatorFactory 
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ValidatorConfiguration configuration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.validation.validator.DefaultValidatorConfiguration null Definition: io.micronaut.validation.validator.DefaultValidatorConfiguration
+01:03:23.203 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.validation.validator.DefaultValidatorConfiguration] for type: configuration 
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.validation.validator.DefaultValidatorFactory@22de611c] from definition [Definition: io.micronaut.validation.validator.DefaultValidatorFactory] with qualifier [null]
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.validation.ValidatingInterceptor@49b2efcb] from definition [Definition: io.micronaut.validation.ValidatingInterceptor] with qualifier [null]
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.validation.ValidatingInterceptor@49b2efcb for candidate: Definition: io.micronaut.validation.ValidatingInterceptor with qualifier: @InterceptorBinding(io.micronaut.validation.Validated)@InterceptorBinding(interceptorType = class io.micronaut.validation.ValidatingInterceptor)
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [com.kpnquest.identifyplayer.$IdentifyPlayerController$Definition$Intercepted@48e6ade8] from definition [Definition: com.kpnquest.identifyplayer.$IdentifyPlayerController$Definition$Intercepted] with qualifier [null]
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- No BeanIntrospection found for bean type: class com.kpnquest.identifyplayer.$IdentifyPlayerController$Definition$Intercepted
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- No BeanIntrospection found for bean type: class com.kpnquest.identifyplayer.IdentifyPlayerRequest
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- No BeanIntrospection found for bean type: class com.kpnquest.identifyplayer.IdentifyPlayerRequest
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.UnsatisfiedRouteHandler null Definition: io.micronaut.http.server.exceptions.UnsatisfiedRouteHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.URISyntaxHandler null Definition: io.micronaut.http.server.exceptions.URISyntaxHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class com.kpnquest.shared.exception.GlobalExceptionHandler null Definition: com.kpnquest.shared.exception.GlobalExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.errors.OauthErrorResponseExceptionHandler null Definition: io.micronaut.security.errors.OauthErrorResponseExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.DuplicateRouteHandler null Definition: io.micronaut.http.server.exceptions.DuplicateRouteHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.JsonExceptionHandler null Definition: io.micronaut.http.server.exceptions.JsonExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.UnsatisfiedArgumentHandler null Definition: io.micronaut.http.server.exceptions.UnsatisfiedArgumentHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.HttpStatusHandler null Definition: io.micronaut.http.server.exceptions.HttpStatusHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.authentication.AuthenticationExceptionHandler null Definition: io.micronaut.security.authentication.AuthenticationExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.JacksonExceptionHandler null Definition: io.micronaut.http.server.exceptions.JacksonExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.ContentLengthExceededHandler null Definition: io.micronaut.http.server.exceptions.ContentLengthExceededHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.security.authentication.DefaultAuthorizationExceptionHandler null Definition: io.micronaut.security.authentication.DefaultAuthorizationExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.validation.exceptions.ConstraintExceptionHandler null Definition: io.micronaut.validation.exceptions.ConstraintExceptionHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.ConversionErrorHandler null Definition: io.micronaut.http.server.exceptions.ConversionErrorHandler
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Qualifying bean [exceptionHandler] for qualifier: io.micronaut.inject.qualifiers.ClosestTypeArgumentQualifier@4c4c1e5b 
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.validation.exceptions.ConstraintExceptionHandler] for type: io.micronaut.inject.qualifiers.ClosestTypeArgumentQualifier@4c4c1e5b exceptionHandler 
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- No BeanIntrospection found for bean type: interface io.micronaut.http.HttpResponse
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ErrorResponseProcessor responseProcessor
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.server.exceptions.response.HateoasErrorResponseProcessor @Secondary Definition: io.micronaut.http.server.exceptions.response.HateoasErrorResponseProcessor
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [Definition: io.micronaut.http.server.exceptions.response.HateoasErrorResponseProcessor] for type: responseProcessor 
+01:03:23.204 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.validation.exceptions.ConstraintExceptionHandler@31b873d7] from definition [Definition: io.micronaut.validation.exceptions.ConstraintExceptionHandler] with qualifier [null]
+01:03:23.205 [HikariPool-2 housekeeper] DEBUG com.zaxxer.hikari.pool.HikariPool -- HikariPool-2 - Pool stats (total=1, active=0, idle=1, waiting=0)
+01:03:23.206 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- Found BeanIntrospection for type: class io.micronaut.http.hateoas.JsonError,
+01:03:23.206 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.jackson.modules.BeanIntrospectionModule -- Updating 5 properties with BeanIntrospection data for type: class io.micronaut.http.hateoas.JsonError
+01:03:23.206 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- Found BeanIntrospection for type: class io.micronaut.http.hateoas.DefaultLink,
+01:03:23.206 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.jackson.modules.BeanIntrospectionModule -- Updating 8 properties with BeanIntrospection data for type: class io.micronaut.http.hateoas.DefaultLink
+01:03:23.207 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Resolving beans for type: &lt;HttpRequestTerminatedEvent&gt; io.micronaut.context.event.ApplicationEventListener 
+01:03:23.208 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.lifecycle -- Created bean [io.micronaut.runtime.http.scope.RequestCustomScope@4ed659f] from definition [Definition: io.micronaut.runtime.http.scope.RequestCustomScope] with qualifier [null]
+01:03:23.208 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.DefaultBeanContext -- Found a registration BeanRegistration: io.micronaut.runtime.http.scope.RequestCustomScope@4ed659f for candidate: Definition: io.micronaut.runtime.http.scope.RequestCustomScope with qualifier: &lt;HttpRequestTerminatedEvent&gt;
+01:03:23.208 [default-nioEventLoopGroup-3-3] DEBUG io.micronaut.context.event.ApplicationEventPublisher -- Publishing event: io.micronaut.http.context.event.HttpRequestTerminatedEvent[source=POST /api/v1/players/identify]
+01:03:23.208 [default-nioEventLoopGroup-3-2] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: MessageBodyReader
+01:03:23.208 [default-nioEventLoopGroup-3-2] DEBUG io.micronaut.context.DefaultBeanContext -- Bean [class io.micronaut.http.netty.body.NettyJsonHandler] replaces existing bean of type [class io.micronaut.json.body.JsonMessageHandler]
+01:03:23.208 [default-nioEventLoopGroup-3-2] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.netty.body.NettyJsonStreamHandler null Definition: io.micronaut.http.netty.body.NettyJsonStreamHandler
+01:03:23.208 [default-nioEventLoopGroup-3-2] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.http.netty.body.NettyJsonHandler null Definition: io.micronaut.http.netty.body.NettyJsonHandler
+01:03:23.209 [default-nioEventLoopGroup-3-2] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- Found BeanIntrospection for type: class io.micronaut.http.hateoas.JsonError,
+01:03:23.210 [default-nioEventLoopGroup-3-2] DEBUG io.micronaut.core.beans.DefaultBeanIntrospector -- Found BeanIntrospection for type: class io.micronaut.http.hateoas.GenericResource,
+01:03:23.213 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Finding candidate beans for type: ResourceLoader
+01:03:23.213 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext --   interface io.micronaut.core.io.scan.ClassPathResourceLoader null Definition: io.micronaut.http.resource.ResourceLoaderFactory
+01:03:23.213 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext --   class io.micronaut.context.env.DefaultEnvironment @Primary io.micronaut.context.DefaultRuntimeBeanDefinition@839755f
+01:03:23.213 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext --   interface io.micronaut.core.io.file.FileSystemResourceLoader null Definition: io.micronaut.http.resource.ResourceLoaderFactory
+01:03:23.213 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Searching for @Primary for type [resourceLoader] from candidates: [Definition: io.micronaut.http.resource.ResourceLoaderFactory, io.micronaut.context.DefaultRuntimeBeanDefinition@839755f, Definition: io.micronaut.http.resource.ResourceLoaderFactory] 
+01:03:23.213 [Test worker] DEBUG io.micronaut.context.DefaultBeanContext -- Found concrete candidate [io.micronaut.context.DefaultRuntimeBeanDefinition@839755f] for type: resourceLoader 
+</pre>
+<button class="clipboard-copy-btn" aria-label="Copy to clipboard" data-copy-element-id="root-0-test-stdout-sameDevice_returnsSamePlayerId()">Copy</button>
+</span>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="https://www.gradle.org">Gradle 9.4.1</a> at Apr 15, 2026, 1:03:24 AM</p>
+</div>
+</div>
+</body>
+</html>
