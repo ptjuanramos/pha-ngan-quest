@@ -1,9 +1,0 @@
-# Override defaults for local development
-micronaut:
-  server:
-    cors:
-      enabled: true
-      configurations:
-        frontend:
-          allowed-origins:
-            - http://localhost:8080

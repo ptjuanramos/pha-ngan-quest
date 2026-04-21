@@ -1,2 +1,0 @@
-[engine:junit-jupiter]/[class:com.kpnquest.identifyplayer.IdentifyPlayerIT]/[method:sameDevice_returnsSamePlayerId()]
-[engine:junit-jupiter]/[class:com.kpnquest.identifyplayer.IdentifyPlayerIT]/[method:newDevice_createsPlayerAndReturnsToken()]
