@@ -41,6 +41,9 @@ const downloadPhoto = (photo: string, missionId: number, title: string) => {
 };
 
 const QuestComplete = ({ photos }: QuestCompleteProps) => {
+  const [revealed, setRevealed] = useState<Record<number, boolean>>({});
+  const [confirmRevealId, setConfirmRevealId] = useState<number | null>(null);
+
   return (
     <div className="min-h-screen px-6 py-16 fade-in">
       <div className="text-center mb-12">
@@ -61,15 +64,34 @@ const QuestComplete = ({ photos }: QuestCompleteProps) => {
         {missions.map((mission) => {
           const photo = photos[mission.id];
           if (!photo) return null;
+          const isSpicy = mission.isSpicy;
+          const isHidden = isSpicy && !revealed[mission.id];
           return (
             <div key={mission.id} className="relative overflow-hidden rounded-lg group">
               <div className="aspect-square">
                 <img
                   src={photo}
                   alt={`Missão ${mission.id}`}
-                  className="h-full w-full object-cover"
+                  className={`h-full w-full object-cover transition-all ${
+                    isHidden ? "blur-2xl scale-110" : ""
+                  }`}
                 />
               </div>
+
+              {isHidden && (
+                <button
+                  type="button"
+                  onClick={() => setConfirmRevealId(mission.id)}
+                  aria-label={`Revelar foto picante da missão ${mission.id}`}
+                  className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-foreground/30 text-primary-foreground"
+                >
+                  <Lock size={28} />
+                  <span className="font-body text-xs font-semibold uppercase tracking-wider">
+                    Picante
+                  </span>
+                </button>
+              )}
+
               <button
                 type="button"
                 onClick={() => downloadPhoto(photo, mission.id, mission.title)}
@@ -78,6 +100,18 @@ const QuestComplete = ({ photos }: QuestCompleteProps) => {
               >
                 <Download size={16} />
               </button>
+
+              {isSpicy && revealed[mission.id] && (
+                <button
+                  type="button"
+                  onClick={() => setRevealed((r) => ({ ...r, [mission.id]: false }))}
+                  aria-label={`Esconder foto da missão ${mission.id}`}
+                  className="absolute left-2 top-2 flex h-9 w-9 items-center justify-center rounded-full bg-background/80 text-foreground shadow backdrop-blur-sm transition-all active:scale-90 hover:bg-background"
+                >
+                  <Eye size={16} />
+                </button>
+              )}
+
               <div className="absolute bottom-0 left-0 right-0 bg-foreground/60 px-2 py-1">
                 <p className="font-body text-xs text-primary-foreground truncate">
                   {mission.id}. {mission.title}
@@ -87,6 +121,33 @@ const QuestComplete = ({ photos }: QuestCompleteProps) => {
           );
         })}
       </div>
+
+      <AlertDialog
+        open={confirmRevealId !== null}
+        onOpenChange={(open) => !open && setConfirmRevealId(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Revelar foto picante?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta foto é de uma missão picante (+18). Tens a certeza que queres vê-la?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmRevealId !== null) {
+                  setRevealed((r) => ({ ...r, [confirmRevealId]: true }));
+                }
+                setConfirmRevealId(null);
+              }}
+            >
+              Sim, revelar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
