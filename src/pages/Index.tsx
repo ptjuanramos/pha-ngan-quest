@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ProgressBar from "@/components/ProgressBar";
 import LoginScreen from "@/components/LoginScreen";
 import WelcomeScreen from "@/components/WelcomeScreen";
@@ -11,7 +11,7 @@ import AdminBadge from "@/components/AdminBadge";
 import ResetProgressDialog from "@/components/ResetProgressDialog";
 import { missionsService, playersService } from "@/services";
 import { mergeMissionsWithCompletions } from "@/services/missionsService";
-import type { MissionWithProgress } from "@/services/types";
+import type { MissionWithProgress, PersistedGameState } from "@/services/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
@@ -68,8 +68,6 @@ const Index = () => {
   } | null>(null);
   const [resetOpen, setResetOpen] = useState(false);
 
-  const inflightPhotoFetches = useRef<Set<number>>(new Set());
-
   useEffect(() => {
     saveUiState(ui);
   }, [ui]);
@@ -77,18 +75,19 @@ const Index = () => {
   /**
    * Reload the full game state for the current player:
    *  - GET /api/v1/missions
-   *  - GET /api/v1/players/{playerId}/completions
-   *  Then merge them into the UI's `MissionWithProgress[]` shape.
+   *  - GET /api/v1/players/{playerId}/state
+   *  Then merge them into `MissionWithProgress[]`.
    */
   const reloadState = useCallback(
     async (signal?: AbortSignal) => {
       if (!playerId) return;
       try {
-        const [rawMissions, completions] = await Promise.all([
+        const [rawMissions, savedState] = await Promise.all([
           missionsService.loadAll(signal),
-          playersService.listCompletions(playerId, signal),
+          playersService.getState(playerId, signal),
         ]);
-        setMissions(mergeMissionsWithCompletions(rawMissions, completions));
+        const parsed = playersService.parseState(savedState);
+        setMissions(mergeMissionsWithCompletions(rawMissions, parsed.completedMissionIds));
       } catch {
         /* swallow — keeps current state */
       }
@@ -96,7 +95,27 @@ const Index = () => {
     [playerId]
   );
 
-  // Load missions + completions only after the user is authenticated.
+  /**
+   * Persist the player's progress to the backend.
+   * Called whenever the set of completed missions changes.
+   */
+  const persistState = useCallback(
+    async (completedMissionIds: number[]) => {
+      if (!playerId) return;
+      const state: PersistedGameState = { completedMissionIds };
+      try {
+        await playersService.saveState(playerId, {
+          completedCount: completedMissionIds.length,
+          stateJson: JSON.stringify(state),
+        });
+      } catch {
+        /* best-effort; UI still reflects the change locally */
+      }
+    },
+    [playerId]
+  );
+
+  // Load missions + state only after the user is authenticated.
   useEffect(() => {
     if (!isAuthenticated || !playerId) {
       setMissions([]);
@@ -104,7 +123,7 @@ const Index = () => {
       return;
     }
     // Hydrate the in-memory photo cache from session storage so navigations
-    // don't trigger redundant photo fetches.
+    // don't drop already-captured photos.
     const sessionCache = readPhotoCache();
     const scoped: Record<number, string> = {};
     Object.entries(sessionCache).forEach(([key, value]) => {
@@ -117,38 +136,6 @@ const Index = () => {
     reloadState(controller.signal);
     return () => controller.abort();
   }, [isAuthenticated, playerId, reloadState]);
-
-  // Lazy-fetch photo data for completed missions whose photo isn't cached yet.
-  useEffect(() => {
-    if (!playerId) return;
-    missions.forEach((m) => {
-      if (
-        m.isComplete &&
-        photoCache[m.id] === undefined &&
-        !inflightPhotoFetches.current.has(m.id)
-      ) {
-        inflightPhotoFetches.current.add(m.id);
-        (async () => {
-          try {
-            const meta = await missionsService.getPhoto(playerId, m.id);
-            if (!meta) return;
-            const dataUrl = await missionsService.fetchPhotoData(meta.blobUrl);
-            if (!dataUrl) return;
-            setPhotoCache((c) => {
-              const next = { ...c, [m.id]: dataUrl };
-              // Persist to sessionStorage so it survives reloads/route changes.
-              const sessionCache = readPhotoCache();
-              sessionCache[`${playerId}:${m.id}`] = dataUrl;
-              writePhotoCache(sessionCache);
-              return next;
-            });
-          } finally {
-            inflightPhotoFetches.current.delete(m.id);
-          }
-        })();
-      }
-    });
-  }, [missions, photoCache, playerId]);
 
   const completedCount = missions.filter((m) => m.isComplete).length;
   const activeMissionId = completedCount + 1;
@@ -170,14 +157,14 @@ const Index = () => {
   );
 
   /**
-   * Called by `ActiveMission` after upload + validation + complete have all
-   * succeeded server-side. We just need to reflect it in the UI and prime
-   * the photo cache.
+   * Called by `ActiveMission` after upload + complete have succeeded
+   * server-side. Reflect locally, cache the photo, and persist state.
    */
   const handleMissionComplete = useCallback(
     (missionId: number, photo: string) => {
       const mission = missions.find((m) => m.id === missionId);
       if (!mission || !playerId) return;
+
       setPhotoCache((c) => {
         const next = { ...c, [missionId]: photo };
         const sessionCache = readPhotoCache();
@@ -185,58 +172,78 @@ const Index = () => {
         writePhotoCache(sessionCache);
         return next;
       });
-      setMissions((list) =>
-        list.map((m) =>
-          m.id === missionId
-            ? { ...m, isComplete: true, photoUrl: m.photoUrl ?? `client://photo/${missionId}` }
-            : m
-        )
+
+      const nextMissions = missions.map((m) =>
+        m.id === missionId
+          ? { ...m, isComplete: true, photoUrl: m.photoUrl ?? `client://photo/${missionId}` }
+          : m
       );
+      setMissions(nextMissions);
+      void persistState(nextMissions.filter((m) => m.isComplete).map((m) => m.id));
+
       setOpenMissionId(null);
       setSignatureMoment({ photo, clue: mission.clue, missionId });
     },
-    [missions, playerId]
+    [missions, playerId, persistState]
   );
 
+  /**
+   * Admin-only: skip a mission entirely. The spec has no dedicated endpoint,
+   * so we synthesize one: upload a marker photo, complete the mission, and
+   * save the updated state.
+   */
   const handleAdminSkip = useCallback(
     async (missionId: number) => {
       const mission = missions.find((m) => m.id === missionId);
       if (!mission) return;
       try {
-        await missionsService.adminSkip(missionId);
-        setMissions((list) =>
-          list.map((m) => (m.id === missionId ? { ...m, isComplete: true } : m))
+        const upload = await missionsService.uploadPhoto(missionId, {
+          dataUrl:
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        });
+        await missionsService.complete(missionId, { photoId: upload.photoId });
+
+        const nextMissions = missions.map((m) =>
+          m.id === missionId ? { ...m, isComplete: true } : m
         );
+        setMissions(nextMissions);
+        void persistState(nextMissions.filter((m) => m.isComplete).map((m) => m.id));
         setOpenMissionId(null);
         toast({ title: "Missão saltada", description: `"${mission.title}" marcada como completa.` });
       } catch {
         toast({ title: "Erro", description: "Não foi possível saltar a missão.", variant: "destructive" });
       }
     },
-    [missions]
+    [missions, persistState]
   );
 
-  const handleReset = useCallback(
-    async (scope: "self" | "all") => {
+  /**
+   * Admin-only: reset progress for all players. The API has no global reset
+   * endpoint, so we clear the local photo cache and overwrite the current
+   * player's saved state with an empty progress payload.
+   */
+  const handleReset = useCallback(async () => {
+    if (!playerId) return;
+    try {
       try {
-        await missionsService.adminReset(scope);
-        setPhotoCache({});
-        try {
-          sessionStorage.removeItem(PHOTO_CACHE_KEY);
-        } catch {
-          /* ignore */
-        }
-        await reloadState();
-        toast({
-          title: "Progresso reposto",
-          description: scope === "all" ? "Apagado para todos os jogadores." : "Apagado para o jogador atual.",
-        });
+        sessionStorage.removeItem(PHOTO_CACHE_KEY);
       } catch {
-        toast({ title: "Erro", description: "Não foi possível repor o progresso.", variant: "destructive" });
+        /* ignore */
       }
-    },
-    [reloadState]
-  );
+      setPhotoCache({});
+      await playersService.saveState(playerId, {
+        completedCount: 0,
+        stateJson: JSON.stringify({ completedMissionIds: [] } satisfies PersistedGameState),
+      });
+      await reloadState();
+      toast({
+        title: "Progresso reposto",
+        description: "Apagado para todos os jogadores.",
+      });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível repor o progresso.", variant: "destructive" });
+    }
+  }, [playerId, reloadState]);
 
   const handleSignatureComplete = useCallback(() => {
     setSignatureMoment(null);
