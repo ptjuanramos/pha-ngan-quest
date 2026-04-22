@@ -1,10 +1,10 @@
 import { useEffect, useRef } from "react";
-import { missions } from "@/data/missions";
 import MapMarker, { type MarkerStatus } from "./MapMarker";
+import type { MissionResponse } from "@/services/types";
 
 interface TreasureMapProps {
+  missions: MissionResponse[];
   completedCount: number;
-  photos: Record<number, string>;
   onMarkerClick: (missionId: number) => void;
 }
 
@@ -15,7 +15,7 @@ const POSITIONS = [22, 70, 28, 75, 30, 72, 25, 68];
 const VERTICAL_GAP = 140;
 const TOP_OFFSET = 220;
 
-const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps) => {
+const TreasureMap = ({ missions, completedCount, onMarkerClick }: TreasureMapProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const activeId = completedCount + 1;
   const totalHeight = TOP_OFFSET + missions.length * VERTICAL_GAP + 160;
@@ -24,17 +24,15 @@ const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps
   const pathD = missions
     .map((m, i) => {
       const x = POSITIONS[i];
-      const y = TOP_OFFSET + i * VERTICAL_GAP + 32; // +32 to hit marker center
+      const y = TOP_OFFSET + i * VERTICAL_GAP + 32;
       if (i === 0) return `M ${x} ${y}`;
       const prevX = POSITIONS[i - 1];
       const prevY = TOP_OFFSET + (i - 1) * VERTICAL_GAP + 32;
       const midY = (prevY + y) / 2;
-      // Curved S-shape between points
       return `C ${prevX} ${midY}, ${x} ${midY}, ${x} ${y}`;
     })
     .join(" ");
 
-  // Smooth-scroll to active marker on mount / when it changes
   useEffect(() => {
     const el = containerRef.current?.querySelector<HTMLElement>(
       `[data-marker-id="${activeId}"]`
@@ -53,7 +51,6 @@ const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps
       {/* Header */}
       <div className="relative z-10 px-6 pt-10 pb-6 text-center">
         <div className="mb-3 flex items-center justify-center gap-3">
-          {/* Compass rose */}
           <svg width="32" height="32" viewBox="0 0 32 32" className="text-foreground/70">
             <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" strokeWidth="0.8" />
             <path d="M16 4 L18 16 L16 28 L14 16 Z" fill="currentColor" opacity="0.85" />
@@ -70,7 +67,6 @@ const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps
         <div className="mx-auto mt-3 h-px w-16 bg-foreground/30" />
       </div>
 
-      {/* SVG dashed path */}
       <svg
         className="absolute inset-x-0 top-0 z-0"
         width="100%"
@@ -92,31 +88,15 @@ const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps
       </svg>
 
       {/* Decorative palm trees */}
-      <svg
-        className="absolute left-2 top-32 z-0 opacity-30"
-        width="40"
-        height="50"
-        viewBox="0 0 40 50"
-      >
+      <svg className="absolute left-2 top-32 z-0 opacity-30" width="40" height="50" viewBox="0 0 40 50">
         <path d="M20 50 L20 25" stroke="hsl(var(--foreground))" strokeWidth="1.2" fill="none" />
         <path d="M20 25 Q5 20 2 10 M20 25 Q35 20 38 10 M20 25 Q10 15 8 5 M20 25 Q30 15 32 5" stroke="hsl(var(--foreground))" strokeWidth="1" fill="none" />
       </svg>
-      <svg
-        className="absolute right-3 top-1/2 z-0 opacity-25"
-        width="36"
-        height="46"
-        viewBox="0 0 40 50"
-      >
+      <svg className="absolute right-3 top-1/2 z-0 opacity-25" width="36" height="46" viewBox="0 0 40 50">
         <path d="M20 50 L20 25" stroke="hsl(var(--foreground))" strokeWidth="1.2" fill="none" />
         <path d="M20 25 Q5 20 2 10 M20 25 Q35 20 38 10 M20 25 Q10 15 8 5 M20 25 Q30 15 32 5" stroke="hsl(var(--foreground))" strokeWidth="1" fill="none" />
       </svg>
-      {/* Wave decoration */}
-      <svg
-        className="absolute left-4 top-2/3 z-0 opacity-25"
-        width="60"
-        height="20"
-        viewBox="0 0 60 20"
-      >
+      <svg className="absolute left-4 top-2/3 z-0 opacity-25" width="60" height="20" viewBox="0 0 60 20">
         <path d="M0 10 Q15 0 30 10 T60 10" stroke="hsl(var(--foreground))" strokeWidth="0.8" fill="none" />
         <path d="M0 16 Q15 6 30 16 T60 16" stroke="hsl(var(--foreground))" strokeWidth="0.8" fill="none" />
       </svg>
@@ -124,9 +104,8 @@ const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps
       {/* Markers */}
       <div className="relative z-10">
         {missions.map((mission, i) => {
-          const isCompleted = !!photos[mission.id];
           const isActive = mission.id === activeId;
-          const status: MarkerStatus = isCompleted
+          const status: MarkerStatus = mission.isComplete
             ? "completed"
             : isActive
               ? "active"
@@ -161,21 +140,8 @@ const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps
       >
         <div className="flex flex-col items-center gap-2">
           <svg width="56" height="48" viewBox="0 0 56 48">
-            <path
-              d="M6 18 Q6 6 28 6 Q50 6 50 18 L50 20 L6 20 Z"
-              fill="hsl(var(--accent) / 0.85)"
-              stroke="hsl(var(--foreground))"
-              strokeWidth="1.2"
-            />
-            <rect
-              x="6"
-              y="20"
-              width="44"
-              height="22"
-              fill="hsl(var(--accent) / 0.6)"
-              stroke="hsl(var(--foreground))"
-              strokeWidth="1.2"
-            />
+            <path d="M6 18 Q6 6 28 6 Q50 6 50 18 L50 20 L6 20 Z" fill="hsl(var(--accent) / 0.85)" stroke="hsl(var(--foreground))" strokeWidth="1.2" />
+            <rect x="6" y="20" width="44" height="22" fill="hsl(var(--accent) / 0.6)" stroke="hsl(var(--foreground))" strokeWidth="1.2" />
             <rect x="25" y="24" width="6" height="10" fill="hsl(var(--foreground))" />
             <circle cx="28" cy="29" r="1.5" fill="hsl(var(--accent))" />
           </svg>

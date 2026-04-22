@@ -18,6 +18,15 @@ export interface MissionResponse {
   locationHint: string;
   challenge: string;
   isSpicy: boolean;
+  /** Whether this mission has already been completed by the current player. */
+  isComplete: boolean;
+  /**
+   * URL (or opaque reference) to the proof photo blob, when available.
+   * `null` until the player uploads a photo for this mission.
+   * The frontend lazily resolves this URL into image data only when its
+   * local state cache is empty.
+   */
+  photoUrl: string | null;
 }
 
 export interface UploadPhotoRequest {
@@ -27,6 +36,8 @@ export interface UploadPhotoRequest {
 export interface UploadPhotoResponse {
   photoId: number;
   missionId: number;
+  /** URL to retrieve the stored photo blob. */
+  photoUrl: string;
 }
 
 export interface CompleteMissionRequest {
