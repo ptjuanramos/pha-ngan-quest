@@ -26,6 +26,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
   const resetToIdle = () => {
     setStage("idle");
     setPendingPhoto(null);
+    setPendingPhotoId(null);
     setInvalidReason(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -46,6 +47,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
         if (!ctx) return;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         setPendingPhoto(canvas.toDataURL("image/jpeg", 0.7));
+        setPendingPhotoId(null);
         setStage("preview");
       };
       img.src = reader.result as string;
@@ -54,19 +56,32 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
   };
 
   const handleValidate = async () => {
-    if (!pendingPhoto) return;
-    setStage("validating");
+    if (!pendingPhoto || !playerId) return;
+    setStage("uploading");
     try {
+      // 1. Upload photo (if not already uploaded after a previous attempt)
+      let photoId = pendingPhotoId;
+      if (photoId == null) {
+        const upload = await missionsService.uploadPhoto(mission.id, {
+          base64Content: pendingPhoto,
+        });
+        photoId = upload.photoId;
+        setPendingPhotoId(photoId);
+      }
+
+      // 2. AI validation
+      setStage("validating");
       const result = await validatePhoto({
         photo: pendingPhoto,
         missionId: mission.id,
-        challenge: mission.challenge,
-        title: mission.title,
+        playerId,
       });
+
       if (result.valid) {
-        onPhotoUpload(mission.id, pendingPhoto);
-        setStage("idle");
-        setPendingPhoto(null);
+        // 3a. Complete the mission with the validated photo
+        await missionsService.complete(mission.id, { photoId });
+        onMissionComplete(mission.id, pendingPhoto);
+        resetToIdle();
       } else {
         setInvalidReason(
           result.reason ?? "Não conseguimos validar. Por favor, envia a prova novamente."
@@ -79,11 +94,17 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
     }
   };
 
-  const handleAdminApprove = () => {
-    if (!pendingPhoto) return;
-    onPhotoUpload(mission.id, pendingPhoto);
-    setStage("idle");
-    setPendingPhoto(null);
+  const handleAdminApprove = async () => {
+    if (!pendingPhoto || pendingPhotoId == null) return;
+    try {
+      await missionsService.approvePhoto(mission.id, pendingPhotoId, { approved: true });
+      await missionsService.complete(mission.id, { photoId: pendingPhotoId });
+      onMissionComplete(mission.id, pendingPhoto);
+      resetToIdle();
+    } catch {
+      setInvalidReason("Não foi possível aprovar a foto. Tenta novamente.");
+      setStage("invalid");
+    }
   };
 
   return (
