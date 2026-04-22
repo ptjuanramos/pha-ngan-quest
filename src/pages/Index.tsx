@@ -1,10 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { missions } from "@/data/missions";
 import ProgressBar from "@/components/ProgressBar";
 import WelcomeScreen from "@/components/WelcomeScreen";
-import ActiveMission from "@/components/ActiveMission";
-import LockedMission from "@/components/LockedMission";
-import CompletedMission from "@/components/CompletedMission";
+import TreasureMap from "@/components/TreasureMap";
+import MissionSheet from "@/components/MissionSheet";
+import CompletedMissionModal from "@/components/CompletedMissionModal";
 import SignatureMoment from "@/components/SignatureMoment";
 import QuestComplete from "@/components/QuestComplete";
 
@@ -32,15 +32,12 @@ function loadState(): GameState {
 
 function saveState(state: GameState) {
   try {
-    // Save progress without photos (photos stored individually)
     const { photos, ...rest } = state;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
-    // Store each photo separately
     for (const [id, data] of Object.entries(photos)) {
       try {
         localStorage.setItem(`${STORAGE_KEY}-photo-${id}`, data);
       } catch {
-        // If quota exceeded, store as compressed thumbnail
         compressAndStore(Number(id), data);
       }
     }
@@ -59,7 +56,10 @@ function compressAndStore(missionId: number, dataUrl: string) {
     if (!ctx) return;
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
     try {
-      localStorage.setItem(`${STORAGE_KEY}-photo-${missionId}`, canvas.toDataURL("image/jpeg", 0.5));
+      localStorage.setItem(
+        `${STORAGE_KEY}-photo-${missionId}`,
+        canvas.toDataURL("image/jpeg", 0.5)
+      );
     } catch {}
   };
   img.src = dataUrl;
@@ -67,13 +67,13 @@ function compressAndStore(missionId: number, dataUrl: string) {
 
 const Index = () => {
   const [state, setState] = useState<GameState>(loadState);
+  const [openMissionId, setOpenMissionId] = useState<number | null>(null);
+  const [reviewMissionId, setReviewMissionId] = useState<number | null>(null);
   const [signatureMoment, setSignatureMoment] = useState<{
     photo: string;
     clue: string;
     missionId: number;
   } | null>(null);
-
-  const missionRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   useEffect(() => {
     saveState(state);
@@ -83,36 +83,39 @@ const Index = () => {
     setState((s) => ({ ...s, started: true }));
   };
 
-  const handlePhotoUpload = useCallback(
-    (missionId: number, photo: string) => {
-      const mission = missions.find((m) => m.id === missionId);
-      if (!mission) return;
+  const activeMissionId = state.completedCount + 1;
 
-      setSignatureMoment({ photo, clue: mission.clue, missionId });
+  const handleMarkerClick = useCallback(
+    (missionId: number) => {
+      if (state.photos[missionId]) {
+        setReviewMissionId(missionId);
+      } else if (missionId === activeMissionId) {
+        setOpenMissionId(missionId);
+      }
+      // locked: no-op
     },
-    []
+    [state.photos, activeMissionId]
   );
+
+  const handlePhotoUpload = useCallback((missionId: number, photo: string) => {
+    const mission = missions.find((m) => m.id === missionId);
+    if (!mission) return;
+    setOpenMissionId(null);
+    setSignatureMoment({ photo, clue: mission.clue, missionId });
+  }, []);
 
   const handleSignatureComplete = useCallback(() => {
     if (!signatureMoment) return;
     const { missionId, photo } = signatureMoment;
-
     setState((s) => ({
       ...s,
       photos: { ...s.photos, [missionId]: photo },
       completedCount: s.completedCount + 1,
     }));
     setSignatureMoment(null);
-
-    // Scroll to next mission
-    const nextId = missionId + 1;
-    setTimeout(() => {
-      missionRefs.current[nextId]?.scrollIntoView({ behavior: "smooth" });
-    }, 200);
   }, [signatureMoment]);
 
   const isComplete = state.completedCount >= missions.length;
-  const currentMissionId = state.completedCount + 1;
 
   if (!state.started) {
     return (
@@ -133,9 +136,40 @@ const Index = () => {
     );
   }
 
+  const openMission = openMissionId
+    ? missions.find((m) => m.id === openMissionId)
+    : null;
+  const reviewMission = reviewMissionId
+    ? missions.find((m) => m.id === reviewMissionId)
+    : null;
+
   return (
     <div className="paper-texture min-h-screen">
       <ProgressBar completedMissions={state.completedCount} />
+
+      <div className="pt-2">
+        <TreasureMap
+          completedCount={state.completedCount}
+          photos={state.photos}
+          onMarkerClick={handleMarkerClick}
+        />
+      </div>
+
+      {openMission && (
+        <MissionSheet
+          mission={openMission}
+          onClose={() => setOpenMissionId(null)}
+          onPhotoUpload={handlePhotoUpload}
+        />
+      )}
+
+      {reviewMission && (
+        <CompletedMissionModal
+          mission={reviewMission}
+          photo={state.photos[reviewMission.id]}
+          onClose={() => setReviewMissionId(null)}
+        />
+      )}
 
       {signatureMoment && (
         <SignatureMoment
@@ -144,29 +178,6 @@ const Index = () => {
           onComplete={handleSignatureComplete}
         />
       )}
-
-      <div className="pt-2">
-        {missions.map((mission) => {
-          const isCompleted = !!state.photos[mission.id];
-          const isActive = mission.id === currentMissionId;
-          const isLocked = mission.id > currentMissionId;
-
-          return (
-            <div
-              key={mission.id}
-              ref={(el) => { missionRefs.current[mission.id] = el; }}
-            >
-              {isCompleted ? (
-                <CompletedMission mission={mission} photo={state.photos[mission.id]} />
-              ) : isActive ? (
-                <ActiveMission mission={mission} onPhotoUpload={handlePhotoUpload} />
-              ) : isLocked ? (
-                <LockedMission missionNumber={mission.id} isSpicy={mission.isSpicy} />
-              ) : null}
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 };
