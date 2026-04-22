@@ -1,21 +1,35 @@
-import { useRef } from "react";
-import { Camera, MapPin, Flame } from "lucide-react";
+import { useRef, useState } from "react";
+import { Camera, MapPin, Flame, Loader2, Check, RotateCcw } from "lucide-react";
 import type { Mission } from "@/data/missions";
+import { validatePhoto } from "@/lib/validatePhoto";
 
 interface ActiveMissionProps {
   mission: Mission;
   onPhotoUpload: (missionId: number, photo: string) => void;
 }
 
+type Stage = "idle" | "preview" | "validating" | "invalid";
+
 const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [stage, setStage] = useState<Stage>("idle");
+  const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
+  const [invalidReason, setInvalidReason] = useState<string | null>(null);
+
+  const openCamera = () => fileInputRef.current?.click();
+
+  const resetToIdle = () => {
+    setStage("idle");
+    setPendingPhoto(null);
+    setInvalidReason(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
-      // Compress before passing up to avoid localStorage quota issues
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement("canvas");
@@ -26,12 +40,44 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
         const ctx = canvas.getContext("2d");
         if (!ctx) return;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        onPhotoUpload(mission.id, canvas.toDataURL("image/jpeg", 0.7));
+        setPendingPhoto(canvas.toDataURL("image/jpeg", 0.7));
+        setStage("preview");
       };
       img.src = reader.result as string;
     };
     reader.readAsDataURL(file);
   };
+
+  const handleValidate = async () => {
+    if (!pendingPhoto) return;
+    setStage("validating");
+    try {
+      const result = await validatePhoto({
+        photo: pendingPhoto,
+        missionId: mission.id,
+        challenge: mission.challenge,
+        title: mission.title,
+      });
+      if (result.valid) {
+        onPhotoUpload(mission.id, pendingPhoto);
+        // parent will swap this view; reset locally just in case
+        setStage("idle");
+        setPendingPhoto(null);
+      } else {
+        setInvalidReason(
+          result.reason ?? "Hmm, não parece corresponder à missão. Tenta outra vez?"
+        );
+        setStage("invalid");
+        setPendingPhoto(null);
+      }
+    } catch {
+      setInvalidReason("Não conseguimos validar agora. Tenta outra vez.");
+      setStage("invalid");
+      setPendingPhoto(null);
+    }
+  };
+
+  const accentColor = mission.isSpicy ? "accent" : "primary";
 
   return (
     <div className="flex min-h-screen flex-col justify-center px-6 py-16 fade-in">
@@ -79,18 +125,87 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
         </p>
       </div>
 
-      {/* Upload button */}
-      <button
-        onClick={() => fileInputRef.current?.click()}
-        className={`flex items-center justify-center gap-3 rounded-lg px-6 py-4 font-body text-base font-semibold transition-all active:scale-95 ${
-          mission.isSpicy
-            ? "bg-accent text-accent-foreground"
-            : "bg-primary text-primary-foreground"
-        }`}
-      >
-        <Camera size={20} />
-        Enviar a Tua Prova
-      </button>
+      {/* Stage UI */}
+      {stage === "idle" && (
+        <button
+          onClick={openCamera}
+          className={`flex items-center justify-center gap-3 rounded-lg px-6 py-4 font-body text-base font-semibold transition-all active:scale-95 ${
+            mission.isSpicy
+              ? "bg-accent text-accent-foreground"
+              : "bg-primary text-primary-foreground"
+          }`}
+        >
+          <Camera size={20} />
+          Enviar a Tua Prova
+        </button>
+      )}
+
+      {stage === "preview" && pendingPhoto && (
+        <div className="flex flex-col gap-4 fade-in">
+          <div className="overflow-hidden rounded-lg border border-border">
+            <img
+              src={pendingPhoto}
+              alt="Prova capturada"
+              className="h-auto w-full object-cover"
+            />
+          </div>
+          <div className="flex gap-3">
+            <button
+              onClick={resetToIdle}
+              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-4 font-body text-sm font-semibold text-foreground transition-all active:scale-95"
+            >
+              <RotateCcw size={16} />
+              Tirar Outra
+            </button>
+            <button
+              onClick={handleValidate}
+              className={`flex flex-[1.4] items-center justify-center gap-2 rounded-lg px-4 py-4 font-body text-base font-semibold transition-all active:scale-95 ${
+                mission.isSpicy
+                  ? "bg-accent text-accent-foreground"
+                  : "bg-primary text-primary-foreground"
+              }`}
+            >
+              <Check size={18} />
+              Validar Prova
+            </button>
+          </div>
+        </div>
+      )}
+
+      {stage === "validating" && (
+        <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-secondary px-6 py-10 fade-in">
+          <Loader2
+            className={`animate-spin ${
+              mission.isSpicy ? "text-accent" : "text-primary"
+            }`}
+            size={32}
+          />
+          <p className="font-body text-sm italic text-muted-foreground">
+            A verificar a tua prova...
+          </p>
+        </div>
+      )}
+
+      {stage === "invalid" && (
+        <div className="flex flex-col gap-4 fade-in">
+          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-5">
+            <p className="font-body text-sm leading-relaxed text-destructive">
+              {invalidReason}
+            </p>
+          </div>
+          <button
+            onClick={openCamera}
+            className={`flex items-center justify-center gap-3 rounded-lg px-6 py-4 font-body text-base font-semibold transition-all active:scale-95 ${
+              mission.isSpicy
+                ? "bg-accent text-accent-foreground"
+                : "bg-primary text-primary-foreground"
+            }`}
+          >
+            <Camera size={20} />
+            Tentar Outra Vez
+          </button>
+        </div>
+      )}
 
       <input
         ref={fileInputRef}
