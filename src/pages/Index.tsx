@@ -38,7 +38,7 @@ function saveUiState(state: UiState) {
 const Index = () => {
   const { isAuthenticated, isAdmin } = useAuth();
   const [ui, setUi] = useState<UiState>(loadUiState);
-  const [missions, setMissions] = useState<MissionResponse[]>([]);
+  const [missions, setMissions] = useState<MissionWithProgress[]>([]);
   const [photoCache, setPhotoCache] = useState<Record<number, string>>({});
   const [openMissionId, setOpenMissionId] = useState<number | null>(null);
   const [reviewMissionId, setReviewMissionId] = useState<number | null>(null);
