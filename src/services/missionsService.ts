@@ -1,4 +1,5 @@
 import { missions as missionSeed } from "@/data/missions";
+import { httpClient, ApiError } from "./httpClient";
 import type {
   CompleteMissionRequest,
   CompleteMissionResponse,
@@ -8,17 +9,17 @@ import type {
 } from "./types";
 
 /**
- * Mock-backed missions service.
+ * Missions service.
  *
- * NOTE: The real backend endpoints are not yet wired up. Until then, this
- * service simulates them using `localStorage` as the "remote" store, so the
- * full UI flow (load → upload photo → complete) stays exercisable end-to-end.
+ * Each method first attempts a real HTTP call against the backend (so requests
+ * are visible in the browser network tab and easy to wire up once the API is
+ * live). If the request fails — typically because the endpoint does not exist
+ * yet — we transparently fall back to a `localStorage`-backed mock so the full
+ * UI flow stays exercisable end-to-end.
  *
- * When the backend is ready, replace each method body with the corresponding
- * `httpClient` call — the public signatures already match the OpenAPI spec.
+ * Once the backend is ready, the fallbacks can simply be deleted.
  */
 
-const MOCK_LATENCY_MS = 250;
 const STORE_COMPLETED = "mock-backend:missions:completed";
 const STORE_PHOTOS = "mock-backend:missions:photos"; // { [missionId]: { photoId, dataUrl } }
 const PHOTO_URL_PREFIX = "mock://photo/";
@@ -26,10 +27,6 @@ const PHOTO_URL_PREFIX = "mock://photo/";
 interface StoredPhoto {
   photoId: number;
   dataUrl: string;
-}
-
-function delay<T>(value: T): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), MOCK_LATENCY_MS));
 }
 
 function readJson<T>(key: string, fallback: T): T {
@@ -57,67 +54,114 @@ function getPhotos(): Record<number, StoredPhoto> {
   return readJson<Record<number, StoredPhoto>>(STORE_PHOTOS, {});
 }
 
+/** True for transport / 404-style failures where we should fall back to mock. */
+function isBackendUnavailable(err: unknown): boolean {
+  if (err instanceof ApiError) {
+    return err.status === 0 || err.status === 404 || err.status >= 500;
+  }
+  // network errors, JSON parse errors, etc.
+  return true;
+}
+
+function buildMockMissions(): MissionResponse[] {
+  const completed = getCompleted();
+  const photos = getPhotos();
+  return missionSeed.map((m) => ({
+    id: m.id,
+    title: m.title,
+    clue: m.clue,
+    locationHint: m.locationHint,
+    challenge: m.challenge,
+    isSpicy: m.isSpicy,
+    isComplete: !!completed[m.id],
+    photoUrl: photos[m.id] ? `${PHOTO_URL_PREFIX}${m.id}` : null,
+  }));
+}
+
 export const missionsService = {
   /** GET /api/v1/missions */
-  async loadAll(_signal?: AbortSignal): Promise<MissionResponse[]> {
-    const completed = getCompleted();
-    const photos = getPhotos();
-    const list: MissionResponse[] = missionSeed.map((m) => ({
-      id: m.id,
-      title: m.title,
-      clue: m.clue,
-      locationHint: m.locationHint,
-      challenge: m.challenge,
-      isSpicy: m.isSpicy,
-      isComplete: !!completed[m.id],
-      photoUrl: photos[m.id] ? `${PHOTO_URL_PREFIX}${m.id}` : null,
-    }));
-    return delay(list);
+  async loadAll(signal?: AbortSignal): Promise<MissionResponse[]> {
+    try {
+      return await httpClient.get<MissionResponse[]>("/api/v1/missions", { signal });
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      return buildMockMissions();
+    }
   },
 
   /**
    * Resolve a `photoUrl` returned by `loadAll` into the actual data URL.
    * The frontend should only call this when its local cache is empty.
-   *
-   * Not part of the OpenAPI spec yet — mocked locally.
    */
-  async fetchPhoto(photoUrl: string, _signal?: AbortSignal): Promise<string | null> {
-    if (!photoUrl.startsWith(PHOTO_URL_PREFIX)) return null;
-    const missionId = Number(photoUrl.slice(PHOTO_URL_PREFIX.length));
-    const photo = getPhotos()[missionId];
-    return delay(photo ? photo.dataUrl : null);
+  async fetchPhoto(photoUrl: string, signal?: AbortSignal): Promise<string | null> {
+    // Mock-issued URLs short-circuit to localStorage.
+    if (photoUrl.startsWith(PHOTO_URL_PREFIX)) {
+      const missionId = Number(photoUrl.slice(PHOTO_URL_PREFIX.length));
+      return getPhotos()[missionId]?.dataUrl ?? null;
+    }
+    try {
+      const res = await fetch(photoUrl, { signal });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      return await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => reject(reader.error);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
   },
 
   /** POST /api/v1/missions/{missionId}/photos */
   async uploadPhoto(
     missionId: number,
     body: UploadPhotoRequest,
-    _signal?: AbortSignal
+    signal?: AbortSignal
   ): Promise<UploadPhotoResponse> {
-    const photos = getPhotos();
-    const photoId = Date.now();
-    photos[missionId] = { photoId, dataUrl: body.dataUrl };
-    writeJson(STORE_PHOTOS, photos);
-    return delay({
-      photoId,
-      missionId,
-      photoUrl: `${PHOTO_URL_PREFIX}${missionId}`,
-    });
+    try {
+      return await httpClient.post<UploadPhotoResponse>(
+        `/api/v1/missions/${missionId}/photos`,
+        body,
+        { signal }
+      );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      const photos = getPhotos();
+      const photoId = Date.now();
+      photos[missionId] = { photoId, dataUrl: body.dataUrl };
+      writeJson(STORE_PHOTOS, photos);
+      return {
+        photoId,
+        missionId,
+        photoUrl: `${PHOTO_URL_PREFIX}${missionId}`,
+      };
+    }
   },
 
   /** POST /api/v1/missions/{missionId}/complete */
   async complete(
     missionId: number,
-    _body: CompleteMissionRequest,
-    _signal?: AbortSignal
+    body: CompleteMissionRequest,
+    signal?: AbortSignal
   ): Promise<CompleteMissionResponse> {
-    const completed = getCompleted();
-    completed[missionId] = true;
-    writeJson(STORE_COMPLETED, completed);
-    return delay({
-      completionId: Date.now(),
-      missionId,
-      completedAt: new Date().toISOString(),
-    });
+    try {
+      return await httpClient.post<CompleteMissionResponse>(
+        `/api/v1/missions/${missionId}/complete`,
+        body,
+        { signal }
+      );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      const completed = getCompleted();
+      completed[missionId] = true;
+      writeJson(STORE_COMPLETED, completed);
+      return {
+        completionId: Date.now(),
+        missionId,
+        completedAt: new Date().toISOString(),
+      };
+    }
   },
 };

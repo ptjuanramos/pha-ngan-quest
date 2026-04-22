@@ -1,3 +1,4 @@
+import { httpClient, ApiError } from "./httpClient";
 import type {
   GameStateRequest,
   GameStateResponse,
@@ -6,15 +7,14 @@ import type {
 } from "./types";
 
 /**
- * Mock-backed players service.
+ * Players service.
  *
- * NOTE: Backend endpoints are not yet wired up — this implementation simulates
- * `/api/v1/players/*` using `localStorage`. Replace the bodies with real
- * `httpClient` calls once the API is published. Public signatures already
- * match the OpenAPI spec.
+ * Each method issues a real HTTP request first (so it shows up in DevTools and
+ * is trivial to wire up once the backend is live). When the endpoint is not
+ * available yet, we fall back to a `localStorage`-backed mock to keep the UI
+ * flow working end-to-end.
  */
 
-const MOCK_LATENCY_MS = 200;
 const STORE_PLAYER = "mock-backend:player";
 const STORE_STATE = "mock-backend:player-state";
 
@@ -22,10 +22,6 @@ interface StoredPlayer {
   playerId: number;
   token: string;
   deviceToken: string;
-}
-
-function delay<T>(value: T): Promise<T> {
-  return new Promise((resolve) => setTimeout(() => resolve(value), MOCK_LATENCY_MS));
 }
 
 function readJson<T>(key: string, fallback: T | null = null): T | null {
@@ -45,53 +41,85 @@ function writeJson(key: string, value: unknown) {
   }
 }
 
+function isBackendUnavailable(err: unknown): boolean {
+  if (err instanceof ApiError) {
+    return err.status === 0 || err.status === 404 || err.status >= 500;
+  }
+  return true;
+}
+
 export const playersService = {
   /** POST /api/v1/players/identify */
   async identify(
     body: IdentifyPlayerRequest,
-    _signal?: AbortSignal
+    signal?: AbortSignal
   ): Promise<IdentifyPlayerResponse> {
-    const existing = readJson<StoredPlayer>(STORE_PLAYER);
-    if (existing && existing.deviceToken === body.deviceToken) {
-      return delay({ playerId: existing.playerId, token: existing.token });
+    try {
+      return await httpClient.post<IdentifyPlayerResponse>(
+        "/api/v1/players/identify",
+        body,
+        { signal }
+      );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      const existing = readJson<StoredPlayer>(STORE_PLAYER);
+      if (existing && existing.deviceToken === body.deviceToken) {
+        return { playerId: existing.playerId, token: existing.token };
+      }
+      const player: StoredPlayer = {
+        playerId: Date.now(),
+        token: `mock-token-${Math.random().toString(36).slice(2, 10)}`,
+        deviceToken: body.deviceToken,
+      };
+      writeJson(STORE_PLAYER, player);
+      return { playerId: player.playerId, token: player.token };
     }
-    const player: StoredPlayer = {
-      playerId: Date.now(),
-      token: `mock-token-${Math.random().toString(36).slice(2, 10)}`,
-      deviceToken: body.deviceToken,
-    };
-    writeJson(STORE_PLAYER, player);
-    return delay({ playerId: player.playerId, token: player.token });
   },
 
   /** GET /api/v1/players/{playerId}/state */
-  async getState(playerId: number, _signal?: AbortSignal): Promise<GameStateResponse> {
-    const stored = readJson<GameStateResponse>(STORE_STATE);
-    if (stored && stored.playerId === playerId) return delay(stored);
-    const empty: GameStateResponse = {
-      id: Date.now(),
-      playerId,
-      completedCount: 0,
-      stateJson: "{}",
-      updatedAt: new Date().toISOString(),
-    };
-    return delay(empty);
+  async getState(playerId: number, signal?: AbortSignal): Promise<GameStateResponse> {
+    try {
+      return await httpClient.get<GameStateResponse>(
+        `/api/v1/players/${playerId}/state`,
+        { signal }
+      );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      const stored = readJson<GameStateResponse>(STORE_STATE);
+      if (stored && stored.playerId === playerId) return stored;
+      return {
+        id: Date.now(),
+        playerId,
+        completedCount: 0,
+        stateJson: "{}",
+        updatedAt: new Date().toISOString(),
+      };
+    }
   },
 
   /** PUT /api/v1/players/{playerId}/state */
   async saveState(
     playerId: number,
     body: GameStateRequest,
-    _signal?: AbortSignal
+    signal?: AbortSignal
   ): Promise<GameStateResponse> {
-    const updated: GameStateResponse = {
-      id: Date.now(),
-      playerId,
-      completedCount: body.completedCount,
-      stateJson: body.stateJson,
-      updatedAt: new Date().toISOString(),
-    };
-    writeJson(STORE_STATE, updated);
-    return delay(updated);
+    try {
+      return await httpClient.put<GameStateResponse>(
+        `/api/v1/players/${playerId}/state`,
+        body,
+        { signal }
+      );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      const updated: GameStateResponse = {
+        id: Date.now(),
+        playerId,
+        completedCount: body.completedCount,
+        stateJson: body.stateJson,
+        updatedAt: new Date().toISOString(),
+      };
+      writeJson(STORE_STATE, updated);
+      return updated;
+    }
   },
 };
