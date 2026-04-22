@@ -1,5 +1,16 @@
-import { Download } from "lucide-react";
+import { useState } from "react";
+import { Download, Lock, Eye } from "lucide-react";
 import { missions } from "@/data/missions";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface QuestCompleteProps {
   photos: Record<number, string>;
