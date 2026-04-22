@@ -142,11 +142,11 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
 
       {stage === "preview" && pendingPhoto && (
         <div className="flex flex-col gap-4 fade-in">
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className="mx-auto overflow-hidden rounded-lg border border-border">
             <img
               src={pendingPhoto}
               alt="Prova capturada"
-              className="h-auto w-full object-cover"
+              className="mx-auto max-h-[50vh] w-auto max-w-full object-contain"
             />
           </div>
           <div className="flex gap-3">
