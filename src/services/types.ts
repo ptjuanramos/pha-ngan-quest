@@ -22,7 +22,7 @@ export interface MissionResponse {
 
 /**
  * Client-side augmented mission, including local completion + photo state
- * that the backend does not (currently) return per-player.
+ * derived from the player's completions endpoint.
  */
 export interface MissionWithProgress extends MissionResponse {
   isComplete: boolean;
@@ -38,6 +38,28 @@ export interface UploadPhotoRequest {
 export interface UploadPhotoResponse {
   photoId: number;
   missionId: number;
+  blobUrl: string;
+  validationStatus: string;
+}
+
+export interface ValidatePhotoRequest {
+  playerId: number;
+  /** base64 data URL of the captured photo. */
+  photo: string;
+}
+
+export interface ValidatePhotoResponse {
+  valid: boolean;
+  reason: string;
+}
+
+export interface ApprovePhotoRequest {
+  approved: boolean;
+}
+
+export interface ApprovePhotoResponse {
+  photoId: number;
+  validationStatus: string;
 }
 
 export interface CompleteMissionRequest {
@@ -50,6 +72,12 @@ export interface CompleteMissionResponse {
   completedAt: string;
 }
 
+export interface PhotoResponse {
+  photoId: number;
+  blobUrl: string;
+  validationStatus: string;
+}
+
 // ----- Players -----
 export interface IdentifyPlayerRequest {
   username: string;
@@ -60,15 +88,7 @@ export interface IdentifyPlayerResponse {
   token: string;
 }
 
-export interface GameStateRequest {
-  completedCount: number;
-  stateJson: string;
-}
-
-export interface GameStateResponse {
-  id: number;
-  playerId: number;
-  completedCount: number;
-  stateJson: string;
-  updatedAt: string;
+export interface PlayerCompletionResponse {
+  missionId: number;
+  completedAt: string;
 }

@@ -1,22 +1,19 @@
 import { httpClient, ApiError } from "./httpClient";
 import type {
-  GameStateRequest,
-  GameStateResponse,
   IdentifyPlayerRequest,
   IdentifyPlayerResponse,
+  PlayerCompletionResponse,
 } from "./types";
 
 /**
- * Players service.
+ * Players service. Wraps `/api/v1/players/*` endpoints.
  *
- * Each method issues a real HTTP request first (so it shows up in DevTools and
- * is trivial to wire up once the backend is live). When the endpoint is not
- * available yet, we fall back to a `localStorage`-backed mock to keep the UI
- * flow working end-to-end.
+ * `identify` falls back to a localStorage-backed mock when the backend is
+ * unreachable so the UI flow stays exercisable in standalone dev. Other
+ * methods surface API errors to the caller.
  */
 
 const STORE_PLAYER = "mock-backend:player";
-const STORE_STATE = "mock-backend:player-state";
 
 interface StoredPlayer {
   playerId: number;
@@ -24,7 +21,6 @@ interface StoredPlayer {
   username: string;
 }
 
-/** Build a fake but valid-looking JWT (header.payload.signature) for the mock. */
 function buildMockJwt(payload: Record<string, unknown>): string {
   const enc = (obj: unknown) =>
     btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
@@ -108,50 +104,30 @@ export const playersService = {
     }
   },
 
-  /** GET /api/v1/players/{playerId}/state */
-  async getState(playerId: number, signal?: AbortSignal): Promise<GameStateResponse> {
-    try {
-      return await httpClient.get<GameStateResponse>(
-        `/api/v1/players/${playerId}/state`,
-        { signal }
-      );
-    } catch (err) {
-      if (!isBackendUnavailable(err)) throw err;
-      const stored = readJson<GameStateResponse>(STORE_STATE);
-      if (stored && stored.playerId === playerId) return stored;
-      return {
-        id: Date.now(),
-        playerId,
-        completedCount: 0,
-        stateJson: "{}",
-        updatedAt: new Date().toISOString(),
-      };
-    }
-  },
-
-  /** PUT /api/v1/players/{playerId}/state */
-  async saveState(
+  /** GET /api/v1/players/{playerId}/completions */
+  async listCompletions(
     playerId: number,
-    body: GameStateRequest,
     signal?: AbortSignal
-  ): Promise<GameStateResponse> {
+  ): Promise<PlayerCompletionResponse[]> {
     try {
-      return await httpClient.put<GameStateResponse>(
-        `/api/v1/players/${playerId}/state`,
-        body,
+      const data = await httpClient.get<PlayerCompletionResponse[]>(
+        `/api/v1/players/${playerId}/completions`,
         { signal }
       );
+      return Array.isArray(data) ? data : [];
     } catch (err) {
       if (!isBackendUnavailable(err)) throw err;
-      const updated: GameStateResponse = {
-        id: Date.now(),
-        playerId,
-        completedCount: body.completedCount,
-        stateJson: body.stateJson,
-        updatedAt: new Date().toISOString(),
-      };
-      writeJson(STORE_STATE, updated);
-      return updated;
+      // Mock fallback: derive from local completion store used by missionsService.
+      try {
+        const raw = localStorage.getItem("mock-backend:missions:completed");
+        const map = raw ? (JSON.parse(raw) as Record<number, true>) : {};
+        return Object.keys(map).map((id) => ({
+          missionId: Number(id),
+          completedAt: new Date().toISOString(),
+        }));
+      } catch {
+        return [];
+      }
     }
   },
 };

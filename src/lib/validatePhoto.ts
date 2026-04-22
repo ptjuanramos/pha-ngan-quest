@@ -3,8 +3,7 @@ import { photoValidationService } from "@/services/photoValidationService";
 export interface ValidatePhotoInput {
   photo: string; // base64 data URL
   missionId: number;
-  challenge: string;
-  title: string;
+  playerId: number;
 }
 
 export interface ValidatePhotoResult {
@@ -25,14 +24,13 @@ export async function validatePhoto(
   const result = await photoValidationService.validate({
     dataUrl: input.photo,
     missionId: input.missionId,
-    challenge: input.challenge,
-    title: input.title,
+    playerId: input.playerId,
   });
 
   if (!result.valid) {
     return {
       valid: false,
-      reason: result.reason ?? DEFAULT_INVALID_REASON,
+      reason: result.reason || DEFAULT_INVALID_REASON,
     };
   }
 

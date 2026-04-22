@@ -3,20 +3,22 @@ import { Camera, MapPin, Flame, Loader2, Check, RotateCcw, ShieldCheck, FastForw
 import type { Mission } from "@/data/missions";
 import { validatePhoto } from "@/lib/validatePhoto";
 import { useAuth } from "@/contexts/AuthContext";
+import { missionsService } from "@/services";
 
 interface ActiveMissionProps {
   mission: Mission;
-  onPhotoUpload: (missionId: number, photo: string) => void;
+  onMissionComplete: (missionId: number, photo: string) => void;
   onAdminSkip?: (missionId: number) => void;
 }
 
-type Stage = "idle" | "preview" | "validating" | "invalid";
+type Stage = "idle" | "preview" | "uploading" | "validating" | "invalid";
 
-const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionProps) => {
-  const { isAdmin } = useAuth();
+const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissionProps) => {
+  const { isAdmin, playerId } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
+  const [pendingPhotoId, setPendingPhotoId] = useState<number | null>(null);
   const [invalidReason, setInvalidReason] = useState<string | null>(null);
 
   const openCamera = () => fileInputRef.current?.click();
@@ -24,6 +26,7 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
   const resetToIdle = () => {
     setStage("idle");
     setPendingPhoto(null);
+    setPendingPhotoId(null);
     setInvalidReason(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -44,6 +47,7 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
         if (!ctx) return;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         setPendingPhoto(canvas.toDataURL("image/jpeg", 0.7));
+        setPendingPhotoId(null);
         setStage("preview");
       };
       img.src = reader.result as string;
@@ -52,19 +56,32 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
   };
 
   const handleValidate = async () => {
-    if (!pendingPhoto) return;
-    setStage("validating");
+    if (!pendingPhoto || !playerId) return;
+    setStage("uploading");
     try {
+      // 1. Upload photo (if not already uploaded after a previous attempt)
+      let photoId = pendingPhotoId;
+      if (photoId == null) {
+        const upload = await missionsService.uploadPhoto(mission.id, {
+          base64Content: pendingPhoto,
+        });
+        photoId = upload.photoId;
+        setPendingPhotoId(photoId);
+      }
+
+      // 2. AI validation
+      setStage("validating");
       const result = await validatePhoto({
         photo: pendingPhoto,
         missionId: mission.id,
-        challenge: mission.challenge,
-        title: mission.title,
+        playerId,
       });
+
       if (result.valid) {
-        onPhotoUpload(mission.id, pendingPhoto);
-        setStage("idle");
-        setPendingPhoto(null);
+        // 3a. Complete the mission with the validated photo
+        await missionsService.complete(mission.id, { photoId });
+        onMissionComplete(mission.id, pendingPhoto);
+        resetToIdle();
       } else {
         setInvalidReason(
           result.reason ?? "Não conseguimos validar. Por favor, envia a prova novamente."
@@ -77,11 +94,17 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
     }
   };
 
-  const handleAdminApprove = () => {
-    if (!pendingPhoto) return;
-    onPhotoUpload(mission.id, pendingPhoto);
-    setStage("idle");
-    setPendingPhoto(null);
+  const handleAdminApprove = async () => {
+    if (!pendingPhoto || pendingPhotoId == null) return;
+    try {
+      await missionsService.approvePhoto(mission.id, pendingPhotoId, { approved: true });
+      await missionsService.complete(mission.id, { photoId: pendingPhotoId });
+      onMissionComplete(mission.id, pendingPhoto);
+      resetToIdle();
+    } catch {
+      setInvalidReason("Não foi possível aprovar a foto. Tenta novamente.");
+      setStage("invalid");
+    }
   };
 
   return (
@@ -145,7 +168,7 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
         </button>
       )}
 
-      {(stage === "preview" || stage === "validating" || stage === "invalid") &&
+      {(stage === "preview" || stage === "uploading" || stage === "validating" || stage === "invalid") &&
         pendingPhoto && (
           <div className="flex flex-col gap-4 fade-in">
             <div className="mx-auto overflow-hidden rounded-lg border border-border">
@@ -165,7 +188,7 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
             <div className="flex gap-3">
               <button
                 onClick={resetToIdle}
-                disabled={stage === "validating"}
+                disabled={stage === "uploading" || stage === "validating"}
                 className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-4 font-body text-sm font-semibold text-foreground transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
               >
                 <RotateCcw size={16} />
@@ -173,7 +196,7 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
               </button>
               <button
                 onClick={handleValidate}
-                disabled={stage === "validating"}
+                disabled={stage === "uploading" || stage === "validating"}
                 className={`flex flex-[1.4] items-center justify-center gap-2 rounded-lg px-4 py-4 font-body text-base font-semibold transition-all active:scale-95 disabled:active:scale-100 ${
                   stage === "invalid"
                     ? "bg-destructive text-destructive-foreground"
@@ -182,7 +205,12 @@ const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionPro
                     : "bg-primary text-primary-foreground"
                 }`}
               >
-                {stage === "validating" ? (
+                {stage === "uploading" ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    A enviar...
+                  </>
+                ) : stage === "validating" ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
                     A verificar...
