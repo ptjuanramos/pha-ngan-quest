@@ -22,7 +22,7 @@ export interface MissionResponse {
 
 /**
  * Client-side augmented mission, including local completion + photo state
- * derived from the player's completions endpoint.
+ * derived from the player's saved game state.
  */
 export interface MissionWithProgress extends MissionResponse {
   isComplete: boolean;
@@ -31,35 +31,13 @@ export interface MissionWithProgress extends MissionResponse {
 }
 
 export interface UploadPhotoRequest {
-  /** Base64-encoded image content (data URL or raw base64). */
-  base64Content: string;
+  /** Base64 data URL of the captured photo. */
+  dataUrl: string;
 }
 
 export interface UploadPhotoResponse {
   photoId: number;
   missionId: number;
-  blobUrl: string;
-  validationStatus: string;
-}
-
-export interface ValidatePhotoRequest {
-  playerId: number;
-  /** base64 data URL of the captured photo. */
-  photo: string;
-}
-
-export interface ValidatePhotoResponse {
-  valid: boolean;
-  reason: string;
-}
-
-export interface ApprovePhotoRequest {
-  approved: boolean;
-}
-
-export interface ApprovePhotoResponse {
-  photoId: number;
-  validationStatus: string;
 }
 
 export interface CompleteMissionRequest {
@@ -72,15 +50,9 @@ export interface CompleteMissionResponse {
   completedAt: string;
 }
 
-export interface PhotoResponse {
-  photoId: number;
-  blobUrl: string;
-  validationStatus: string;
-}
-
 // ----- Players -----
 export interface IdentifyPlayerRequest {
-  username: string;
+  deviceToken: string;
 }
 
 export interface IdentifyPlayerResponse {
@@ -88,7 +60,23 @@ export interface IdentifyPlayerResponse {
   token: string;
 }
 
-export interface PlayerCompletionResponse {
-  missionId: number;
-  completedAt: string;
+export interface GameStateRequest {
+  completedCount: number;
+  stateJson: string;
+}
+
+export interface GameStateResponse {
+  id: number;
+  playerId: number;
+  completedCount: number;
+  stateJson: string;
+  updatedAt: string;
+}
+
+/**
+ * Shape persisted inside `GameStateResponse.stateJson`. The client owns the
+ * format — the backend only stores it as an opaque string.
+ */
+export interface PersistedGameState {
+  completedMissionIds: number[];
 }
