@@ -138,12 +138,11 @@ export const missionsService = {
       if (!isBackendUnavailable(err)) throw err;
       const photos = getPhotos();
       const photoId = Date.now();
-      photos[missionId] = { photoId, dataUrl: body.dataUrl };
+      photos[missionId] = { photoId, dataUrl: body.base64Content };
       writeJson(STORE_PHOTOS, photos);
       return {
         photoId,
         missionId,
-        photoUrl: `${PHOTO_URL_PREFIX}${missionId}`,
       };
     }
   },
