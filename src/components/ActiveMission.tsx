@@ -65,15 +65,13 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
         setPendingPhoto(null);
       } else {
         setInvalidReason(
-          result.reason ?? "Hmm, não parece corresponder à missão. Tenta outra vez?"
+          result.reason ?? "Não conseguimos validar. Por favor, envia a prova novamente."
         );
         setStage("invalid");
-        setPendingPhoto(null);
       }
     } catch {
-      setInvalidReason("Não conseguimos validar agora. Tenta outra vez.");
+      setInvalidReason("Não conseguimos validar agora. Por favor, envia a prova novamente.");
       setStage("invalid");
-      setPendingPhoto(null);
     }
   };
 
@@ -140,72 +138,63 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
         </button>
       )}
 
-      {stage === "preview" && pendingPhoto && (
-        <div className="flex flex-col gap-4 fade-in">
-          <div className="mx-auto overflow-hidden rounded-lg border border-border">
-            <img
-              src={pendingPhoto}
-              alt="Prova capturada"
-              className="mx-auto max-h-[50vh] w-auto max-w-full object-contain"
-            />
-          </div>
-          <div className="flex gap-3">
-            <button
-              onClick={resetToIdle}
-              className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-4 font-body text-sm font-semibold text-foreground transition-all active:scale-95"
-            >
-              <RotateCcw size={16} />
-              Tirar Outra
-            </button>
-            <button
-              onClick={handleValidate}
-              className={`flex flex-[1.4] items-center justify-center gap-2 rounded-lg px-4 py-4 font-body text-base font-semibold transition-all active:scale-95 ${
-                mission.isSpicy
-                  ? "bg-accent text-accent-foreground"
-                  : "bg-primary text-primary-foreground"
-              }`}
-            >
-              <Check size={18} />
-              Validar Prova
-            </button>
-          </div>
-        </div>
-      )}
+      {(stage === "preview" || stage === "validating" || stage === "invalid") &&
+        pendingPhoto && (
+          <div className="flex flex-col gap-4 fade-in">
+            <div className="mx-auto overflow-hidden rounded-lg border border-border">
+              <img
+                src={pendingPhoto}
+                alt="Prova capturada"
+                className="mx-auto max-h-[50vh] w-auto max-w-full object-contain"
+              />
+            </div>
 
-      {stage === "validating" && (
-        <div className="flex flex-col items-center justify-center gap-4 rounded-lg bg-secondary px-6 py-10 fade-in">
-          <Loader2
-            className={`animate-spin ${
-              mission.isSpicy ? "text-accent" : "text-primary"
-            }`}
-            size={32}
-          />
-          <p className="font-body text-sm italic text-muted-foreground">
-            A verificar a tua prova...
-          </p>
-        </div>
-      )}
+            {stage === "invalid" && invalidReason && (
+              <p className="font-body text-sm leading-relaxed text-destructive text-center">
+                {invalidReason}
+              </p>
+            )}
 
-      {stage === "invalid" && (
-        <div className="flex flex-col gap-4 fade-in">
-          <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-5">
-            <p className="font-body text-sm leading-relaxed text-destructive">
-              {invalidReason}
-            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={resetToIdle}
+                disabled={stage === "validating"}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-4 font-body text-sm font-semibold text-foreground transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
+              >
+                <RotateCcw size={16} />
+                Tirar Outra
+              </button>
+              <button
+                onClick={handleValidate}
+                disabled={stage === "validating"}
+                className={`flex flex-[1.4] items-center justify-center gap-2 rounded-lg px-4 py-4 font-body text-base font-semibold transition-all active:scale-95 disabled:active:scale-100 ${
+                  stage === "invalid"
+                    ? "bg-destructive text-destructive-foreground"
+                    : mission.isSpicy
+                    ? "bg-accent text-accent-foreground"
+                    : "bg-primary text-primary-foreground"
+                }`}
+              >
+                {stage === "validating" ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    A verificar...
+                  </>
+                ) : stage === "invalid" ? (
+                  <>
+                    <RotateCcw size={18} />
+                    Validar de Novo
+                  </>
+                ) : (
+                  <>
+                    <Check size={18} />
+                    Validar Prova
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-          <button
-            onClick={openCamera}
-            className={`flex items-center justify-center gap-3 rounded-lg px-6 py-4 font-body text-base font-semibold transition-all active:scale-95 ${
-              mission.isSpicy
-                ? "bg-accent text-accent-foreground"
-                : "bg-primary text-primary-foreground"
-            }`}
-          >
-            <Camera size={20} />
-            Tentar Outra Vez
-          </button>
-        </div>
-      )}
+        )}
 
       <input
         ref={fileInputRef}
