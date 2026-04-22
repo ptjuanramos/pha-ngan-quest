@@ -123,14 +123,14 @@ const Index = () => {
       if (!mission) return;
       try {
         const upload = await missionsService.uploadPhoto(missionId, {
-          dataUrl: photo,
+          base64Content: photo,
         });
         await missionsService.complete(missionId, { photoId: upload.photoId });
         setPhotoCache((c) => ({ ...c, [missionId]: photo }));
         setMissions((list) =>
           list.map((m) =>
             m.id === missionId
-              ? { ...m, isComplete: true, photoUrl: upload.photoUrl }
+              ? { ...m, isComplete: true, photoUrl: `client://photo/${missionId}` }
               : m
           )
         );
