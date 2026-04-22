@@ -27,7 +27,7 @@ export interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  login: (username: string) => Promise<void>;
+  login: (deviceToken: string) => Promise<void>;
   logout: () => void;
   loggingIn: boolean;
   loginError: string | null;
@@ -73,11 +73,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setAuthToken(state.token);
   }, [state.token]);
 
-  const login = useCallback(async (username: string) => {
+  const login = useCallback(async (deviceToken: string) => {
     setLoggingIn(true);
     setLoginError(null);
     try {
-      const res = await playersService.identify({ username });
+      const res = await playersService.identify({ deviceToken });
       const next = stateFromToken(res.token, res.playerId);
       localStorage.setItem(
         STORAGE_KEY,
