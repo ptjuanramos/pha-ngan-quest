@@ -18,6 +18,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
+  const [fullQualityPhoto, setFullQualityPhoto] = useState<string | null>(null);
   const [pendingPhotoId, setPendingPhotoId] = useState<number | null>(null);
   const [invalidReason, setInvalidReason] = useState<string | null>(null);
 
@@ -26,6 +27,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
   const resetToIdle = () => {
     setStage("idle");
     setPendingPhoto(null);
+    setFullQualityPhoto(null);
     setPendingPhotoId(null);
     setInvalidReason(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -36,8 +38,10 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
     if (!file) return;
     const reader = new FileReader();
     reader.onloadend = () => {
+      const original = reader.result as string;
       const img = new Image();
       img.onload = () => {
+        // Build a low-quality preview for the UI (fast render, small memory).
         const canvas = document.createElement("canvas");
         const maxDim = 800;
         const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
@@ -47,23 +51,25 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
         if (!ctx) return;
         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         setPendingPhoto(canvas.toDataURL("image/jpeg", 0.7));
+        // Keep the original, full-quality file for upload.
+        setFullQualityPhoto(original);
         setPendingPhotoId(null);
         setStage("preview");
       };
-      img.src = reader.result as string;
+      img.src = original;
     };
     reader.readAsDataURL(file);
   };
 
   const handleValidate = async () => {
-    if (!pendingPhoto || !playerId) return;
+    if (!pendingPhoto || !fullQualityPhoto || !playerId) return;
     setStage("uploading");
     try {
       // 1. Upload photo (if not already uploaded after a previous attempt)
       let photoId = pendingPhotoId;
       if (photoId == null) {
         const upload = await missionsService.uploadPhoto(mission.id, {
-          base64Content: pendingPhoto,
+          base64Content: fullQualityPhoto,
         });
         photoId = upload.photoId;
         setPendingPhotoId(photoId);
