@@ -6,18 +6,35 @@ interface AdminBadgeProps {
 }
 
 const AdminBadge = ({ onResetClick }: AdminBadgeProps) => {
-  const { isAdmin, username, logout } = useAuth();
-  if (!isAdmin) return null;
+  const { isAuthenticated, isAdmin, username, logout } = useAuth();
+  if (!isAuthenticated) return null;
+
+  const handleLogout = () => {
+    try {
+      sessionStorage.removeItem("kpn-photo-cache");
+    } catch {
+      /* ignore */
+    }
+    logout();
+  };
 
   return (
     <div className="fixed right-3 top-3 z-50 flex items-center gap-2">
-      <div className="flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1.5 text-accent shadow-sm backdrop-blur">
-        <Shield size={14} />
-        <span className="font-body text-xs font-bold uppercase tracking-wide">
-          Admin{username ? ` · ${username}` : ""}
-        </span>
-      </div>
-      {onResetClick && (
+      {isAdmin ? (
+        <div className="flex items-center gap-1.5 rounded-full bg-accent/15 px-3 py-1.5 text-accent shadow-sm backdrop-blur">
+          <Shield size={14} />
+          <span className="font-body text-xs font-bold uppercase tracking-wide">
+            Admin{username ? ` · ${username}` : ""}
+          </span>
+        </div>
+      ) : (
+        username && (
+          <div className="rounded-full bg-background/80 px-3 py-1.5 font-body text-xs font-semibold text-foreground shadow-sm backdrop-blur">
+            {username}
+          </div>
+        )
+      )}
+      {isAdmin && onResetClick && (
         <button
           onClick={onResetClick}
           className="rounded-full bg-background/80 px-3 py-1.5 font-body text-xs font-semibold text-foreground shadow-sm backdrop-blur transition-all active:scale-95"
@@ -26,11 +43,13 @@ const AdminBadge = ({ onResetClick }: AdminBadgeProps) => {
         </button>
       )}
       <button
-        onClick={logout}
+        onClick={handleLogout}
         aria-label="Sair"
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-background/80 text-foreground shadow-sm backdrop-blur transition-all active:scale-95"
+        title="Sair"
+        className="flex h-8 items-center justify-center gap-1.5 rounded-full bg-background/80 px-3 font-body text-xs font-semibold text-foreground shadow-sm backdrop-blur transition-all active:scale-95"
       >
         <LogOut size={14} />
+        Sair
       </button>
     </div>
   );
