@@ -8,6 +8,7 @@ import type {
   MissionWithProgress,
   PhotoResponse,
   PlayerCompletionResponse,
+  ResetProgressResponse,
   UploadPhotoResponse,
   UploadPhotoRequest,
 } from "./types";
@@ -139,16 +140,20 @@ export const missionsService = {
   },
 
   /**
-   * Admin-only: reset progress. The spec has no dedicated endpoint yet, so we
-   * just clear the local session photo cache. Backend reset must be handled
-   * server-side.
+   * POST /api/v1/admin/reset (admin-only)
+   * Wipes all completions and photos for every player.
    */
-  async adminReset(_scope: "self" | "all"): Promise<{ ok: true }> {
+  async adminReset(signal?: AbortSignal): Promise<ResetProgressResponse> {
+    const data = await httpClient.post<ResetProgressResponse>(
+      "/api/v1/admin/reset",
+      undefined,
+      { signal }
+    );
     try {
       sessionStorage.removeItem("kpn-photo-cache");
     } catch {
       /* ignore */
     }
-    return { ok: true };
+    return data;
   },
 };

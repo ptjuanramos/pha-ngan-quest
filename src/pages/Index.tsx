@@ -216,27 +216,24 @@ const Index = () => {
     [missions]
   );
 
-  const handleReset = useCallback(
-    async (scope: "self" | "all") => {
+  const handleReset = useCallback(async () => {
+    try {
+      const result = await missionsService.adminReset();
+      setPhotoCache({});
       try {
-        await missionsService.adminReset(scope);
-        setPhotoCache({});
-        try {
-          sessionStorage.removeItem(PHOTO_CACHE_KEY);
-        } catch {
-          /* ignore */
-        }
-        await reloadState();
-        toast({
-          title: "Progresso reposto",
-          description: scope === "all" ? "Apagado para todos os jogadores." : "Apagado para o jogador atual.",
-        });
+        sessionStorage.removeItem(PHOTO_CACHE_KEY);
       } catch {
-        toast({ title: "Erro", description: "Não foi possível repor o progresso.", variant: "destructive" });
+        /* ignore */
       }
-    },
-    [reloadState]
-  );
+      await reloadState();
+      toast({
+        title: "Progresso reposto",
+        description: `Apagadas ${result.deletedCompletions} missões e ${result.deletedPhotos} fotos.`,
+      });
+    } catch {
+      toast({ title: "Erro", description: "Não foi possível repor o progresso.", variant: "destructive" });
+    }
+  }, [reloadState]);
 
   const handleSignatureComplete = useCallback(() => {
     setSignatureMoment(null);

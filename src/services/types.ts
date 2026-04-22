@@ -92,3 +92,9 @@ export interface PlayerCompletionResponse {
   missionId: number;
   completedAt: string;
 }
+
+// ----- Admin -----
+export interface ResetProgressResponse {
+  deletedCompletions: number;
+  deletedPhotos: number;
+}
