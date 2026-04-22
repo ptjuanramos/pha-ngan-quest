@@ -3,20 +3,22 @@ import { Camera, MapPin, Flame, Loader2, Check, RotateCcw, ShieldCheck, FastForw
 import type { Mission } from "@/data/missions";
 import { validatePhoto } from "@/lib/validatePhoto";
 import { useAuth } from "@/contexts/AuthContext";
+import { missionsService } from "@/services";
 
 interface ActiveMissionProps {
   mission: Mission;
-  onPhotoUpload: (missionId: number, photo: string) => void;
+  onMissionComplete: (missionId: number, photo: string) => void;
   onAdminSkip?: (missionId: number) => void;
 }
 
-type Stage = "idle" | "preview" | "validating" | "invalid";
+type Stage = "idle" | "preview" | "uploading" | "validating" | "invalid";
 
-const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionProps) => {
-  const { isAdmin } = useAuth();
+const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissionProps) => {
+  const { isAdmin, playerId } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
+  const [pendingPhotoId, setPendingPhotoId] = useState<number | null>(null);
   const [invalidReason, setInvalidReason] = useState<string | null>(null);
 
   const openCamera = () => fileInputRef.current?.click();
