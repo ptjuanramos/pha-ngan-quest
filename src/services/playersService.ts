@@ -76,6 +76,12 @@ export const playersService = {
         { signal }
       );
     } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        throw new ApiError(
+          { code: err.code || `HTTP_${err.status}`, message: friendlyAuthMessage(err.status) },
+          err.status
+        );
+      }
       if (!isBackendUnavailable(err)) throw err;
       const username = body.username.trim();
       if (!username) {
