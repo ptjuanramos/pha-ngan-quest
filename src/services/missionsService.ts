@@ -169,4 +169,46 @@ export const missionsService = {
       };
     }
   },
+
+  /** Admin-only: skip a mission without uploading a photo. */
+  async adminSkip(missionId: number, signal?: AbortSignal): Promise<CompleteMissionResponse> {
+    try {
+      return await httpClient.post<CompleteMissionResponse>(
+        `/api/v1/missions/${missionId}/skip`,
+        {},
+        { signal }
+      );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      const completed = getCompleted();
+      completed[missionId] = true;
+      writeJson(STORE_COMPLETED, completed);
+      return {
+        completionId: Date.now(),
+        missionId,
+        completedAt: new Date().toISOString(),
+      };
+    }
+  },
+
+  /**
+   * Admin-only: reset progress.
+   * - "self" wipes the current player's progress.
+   * - "all" wipes every player's progress (mock falls back to local wipe).
+   */
+  async adminReset(scope: "self" | "all", signal?: AbortSignal): Promise<{ ok: true }> {
+    try {
+      await httpClient.post(`/api/v1/admin/reset`, { scope }, { signal });
+      return { ok: true };
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      try {
+        localStorage.removeItem(STORE_COMPLETED);
+        localStorage.removeItem(STORE_PHOTOS);
+      } catch {
+        // ignore
+      }
+      return { ok: true };
+    }
+  },
 };
