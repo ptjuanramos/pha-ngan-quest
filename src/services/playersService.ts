@@ -57,6 +57,12 @@ function isBackendUnavailable(err: unknown): boolean {
   return true;
 }
 
+function friendlyAuthMessage(status: number): string {
+  if (status === 401) return "Não autorizado. Verifica o teu nome e tenta novamente.";
+  if (status === 403) return "Acesso negado. Não tens permissão para entrar.";
+  return "Não foi possível autenticar.";
+}
+
 export const playersService = {
   /** POST /api/v1/players/identify */
   async identify(
@@ -70,6 +76,12 @@ export const playersService = {
         { signal }
       );
     } catch (err) {
+      if (err instanceof ApiError && (err.status === 401 || err.status === 403)) {
+        throw new ApiError(
+          { code: err.code || `HTTP_${err.status}`, message: friendlyAuthMessage(err.status) },
+          err.status
+        );
+      }
       if (!isBackendUnavailable(err)) throw err;
       const username = body.username.trim();
       if (!username) {
