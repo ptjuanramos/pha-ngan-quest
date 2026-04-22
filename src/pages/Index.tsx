@@ -10,7 +10,7 @@ import QuestComplete from "@/components/QuestComplete";
 import AdminBadge from "@/components/AdminBadge";
 import ResetProgressDialog from "@/components/ResetProgressDialog";
 import { missionsService } from "@/services";
-import type { MissionResponse } from "@/services/types";
+import type { MissionWithProgress } from "@/services/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
@@ -38,7 +38,7 @@ function saveUiState(state: UiState) {
 const Index = () => {
   const { isAuthenticated, isAdmin } = useAuth();
   const [ui, setUi] = useState<UiState>(loadUiState);
-  const [missions, setMissions] = useState<MissionResponse[]>([]);
+  const [missions, setMissions] = useState<MissionWithProgress[]>([]);
   const [photoCache, setPhotoCache] = useState<Record<number, string>>({});
   const [openMissionId, setOpenMissionId] = useState<number | null>(null);
   const [reviewMissionId, setReviewMissionId] = useState<number | null>(null);
@@ -123,14 +123,14 @@ const Index = () => {
       if (!mission) return;
       try {
         const upload = await missionsService.uploadPhoto(missionId, {
-          dataUrl: photo,
+          base64Content: photo,
         });
         await missionsService.complete(missionId, { photoId: upload.photoId });
         setPhotoCache((c) => ({ ...c, [missionId]: photo }));
         setMissions((list) =>
           list.map((m) =>
             m.id === missionId
-              ? { ...m, isComplete: true, photoUrl: upload.photoUrl }
+              ? { ...m, isComplete: true, photoUrl: `client://photo/${missionId}` }
               : m
           )
         );
