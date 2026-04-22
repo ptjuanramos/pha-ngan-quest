@@ -168,7 +168,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
         </button>
       )}
 
-      {(stage === "preview" || stage === "validating" || stage === "invalid") &&
+      {(stage === "preview" || stage === "uploading" || stage === "validating" || stage === "invalid") &&
         pendingPhoto && (
           <div className="flex flex-col gap-4 fade-in">
             <div className="mx-auto overflow-hidden rounded-lg border border-border">
@@ -188,7 +188,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
             <div className="flex gap-3">
               <button
                 onClick={resetToIdle}
-                disabled={stage === "validating"}
+                disabled={stage === "uploading" || stage === "validating"}
                 className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-4 font-body text-sm font-semibold text-foreground transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
               >
                 <RotateCcw size={16} />
@@ -196,7 +196,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
               </button>
               <button
                 onClick={handleValidate}
-                disabled={stage === "validating"}
+                disabled={stage === "uploading" || stage === "validating"}
                 className={`flex flex-[1.4] items-center justify-center gap-2 rounded-lg px-4 py-4 font-body text-base font-semibold transition-all active:scale-95 disabled:active:scale-100 ${
                   stage === "invalid"
                     ? "bg-destructive text-destructive-foreground"
@@ -205,7 +205,12 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
                     : "bg-primary text-primary-foreground"
                 }`}
               >
-                {stage === "validating" ? (
+                {stage === "uploading" ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" />
+                    A enviar...
+                  </>
+                ) : stage === "validating" ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
                     A verificar...

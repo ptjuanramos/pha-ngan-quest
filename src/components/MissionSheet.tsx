@@ -6,11 +6,11 @@ import ActiveMission from "./ActiveMission";
 interface MissionSheetProps {
   mission: Mission;
   onClose: () => void;
-  onPhotoUpload: (missionId: number, photo: string) => void;
+  onMissionComplete: (missionId: number, photo: string) => void;
   onAdminSkip?: (missionId: number) => void;
 }
 
-const MissionSheet = ({ mission, onClose, onPhotoUpload, onAdminSkip }: MissionSheetProps) => {
+const MissionSheet = ({ mission, onClose, onMissionComplete, onAdminSkip }: MissionSheetProps) => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -35,7 +35,7 @@ const MissionSheet = ({ mission, onClose, onPhotoUpload, onAdminSkip }: MissionS
       </button>
       <ActiveMission
         mission={mission}
-        onPhotoUpload={onPhotoUpload}
+        onMissionComplete={onMissionComplete}
         onAdminSkip={onAdminSkip}
       />
     </div>
