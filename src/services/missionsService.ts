@@ -64,10 +64,11 @@ function isBackendUnavailable(err: unknown): boolean {
   return true;
 }
 
-function buildMockMissions(): MissionResponse[] {
+function buildMockMissions(base?: MissionResponse[]): MissionWithProgress[] {
   const completed = getCompleted();
   const photos = getPhotos();
-  return missionSeed.map((m) => ({
+  const source = base ?? missionSeed;
+  return source.map((m) => ({
     id: m.id,
     title: m.title,
     clue: m.clue,
@@ -81,14 +82,15 @@ function buildMockMissions(): MissionResponse[] {
 
 export const missionsService = {
   /** GET /api/v1/missions */
-  async loadAll(signal?: AbortSignal): Promise<MissionResponse[]> {
+  async loadAll(signal?: AbortSignal): Promise<MissionWithProgress[]> {
     try {
       const data = await httpClient.get<MissionResponse[]>("/api/v1/missions", { signal });
       if (!Array.isArray(data)) {
         // Backend returned a non-array payload (e.g. dev server HTML fallback).
         return buildMockMissions();
       }
-      return data;
+      // Augment server data with locally-tracked completion + photo references.
+      return buildMockMissions(data);
     } catch (err) {
       if (!isBackendUnavailable(err)) throw err;
       return buildMockMissions();
