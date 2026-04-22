@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import MapMarker, { type MarkerStatus } from "./MapMarker";
-import type { MissionResponse } from "@/services/types";
+import type { MissionWithProgress } from "@/services/types";
 
 interface TreasureMapProps {
-  missions: MissionResponse[];
+  missions: MissionWithProgress[];
   completedCount: number;
   onMarkerClick: (missionId: number) => void;
 }
