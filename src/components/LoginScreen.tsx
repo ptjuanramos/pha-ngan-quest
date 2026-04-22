@@ -69,10 +69,6 @@ const LoginScreen = () => {
           )}
         </button>
       </form>
-
-      <p className="font-body text-xs text-muted-foreground mt-6 max-w-[260px] italic">
-        Dica: nomes que contenham "admin" entram em modo administrador.
-      </p>
     </div>
   );
 };
