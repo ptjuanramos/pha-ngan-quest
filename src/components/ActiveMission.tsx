@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
-import { Camera, MapPin, Flame, Loader2, Check, RotateCcw, FastForward } from "lucide-react";
+import { Camera, MapPin, Flame, Loader2, Check, RotateCcw, ShieldCheck, FastForward } from "lucide-react";
 import type { Mission } from "@/data/missions";
+import { validatePhoto } from "@/lib/validatePhoto";
 import { useAuth } from "@/contexts/AuthContext";
 import { missionsService } from "@/services";
 
@@ -10,7 +11,7 @@ interface ActiveMissionProps {
   onAdminSkip?: (missionId: number) => void;
 }
 
-type Stage = "idle" | "preview" | "uploading" | "completing" | "error";
+type Stage = "idle" | "preview" | "uploading" | "validating" | "invalid";
 
 const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissionProps) => {
   const { isAdmin, playerId } = useAuth();
@@ -18,7 +19,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
   const [stage, setStage] = useState<Stage>("idle");
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
   const [pendingPhotoId, setPendingPhotoId] = useState<number | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [invalidReason, setInvalidReason] = useState<string | null>(null);
 
   const openCamera = () => fileInputRef.current?.click();
 
@@ -26,7 +27,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
     setStage("idle");
     setPendingPhoto(null);
     setPendingPhotoId(null);
-    setErrorMsg(null);
+    setInvalidReason(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -54,29 +55,55 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
     reader.readAsDataURL(file);
   };
 
-  const handleSubmit = async () => {
+  const handleValidate = async () => {
     if (!pendingPhoto || !playerId) return;
-    setErrorMsg(null);
+    setStage("uploading");
     try {
-      // 1. Upload photo (reuse photoId on retry)
+      // 1. Upload photo (if not already uploaded after a previous attempt)
       let photoId = pendingPhotoId;
       if (photoId == null) {
-        setStage("uploading");
         const upload = await missionsService.uploadPhoto(mission.id, {
-          dataUrl: pendingPhoto,
+          base64Content: pendingPhoto,
         });
         photoId = upload.photoId;
         setPendingPhotoId(photoId);
       }
 
-      // 2. Complete the mission
-      setStage("completing");
-      await missionsService.complete(mission.id, { photoId });
+      // 2. AI validation
+      setStage("validating");
+      const result = await validatePhoto({
+        photo: pendingPhoto,
+        missionId: mission.id,
+        playerId,
+      });
+
+      if (result.valid) {
+        // 3a. Complete the mission with the validated photo
+        await missionsService.complete(mission.id, { photoId });
+        onMissionComplete(mission.id, pendingPhoto);
+        resetToIdle();
+      } else {
+        setInvalidReason(
+          result.reason ?? "Não conseguimos validar. Por favor, envia a prova novamente."
+        );
+        setStage("invalid");
+      }
+    } catch {
+      setInvalidReason("Não conseguimos validar agora. Por favor, envia a prova novamente.");
+      setStage("invalid");
+    }
+  };
+
+  const handleAdminApprove = async () => {
+    if (!pendingPhoto || pendingPhotoId == null) return;
+    try {
+      await missionsService.approvePhoto(mission.id, pendingPhotoId, { approved: true });
+      await missionsService.complete(mission.id, { photoId: pendingPhotoId });
       onMissionComplete(mission.id, pendingPhoto);
       resetToIdle();
     } catch {
-      setErrorMsg("Não conseguimos enviar a tua prova. Tenta novamente.");
-      setStage("error");
+      setInvalidReason("Não foi possível aprovar a foto. Tenta novamente.");
+      setStage("invalid");
     }
   };
 
@@ -141,7 +168,7 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
         </button>
       )}
 
-      {(stage === "preview" || stage === "uploading" || stage === "completing" || stage === "error") &&
+      {(stage === "preview" || stage === "uploading" || stage === "validating" || stage === "invalid") &&
         pendingPhoto && (
           <div className="flex flex-col gap-4 fade-in">
             <div className="mx-auto overflow-hidden rounded-lg border border-border">
@@ -152,26 +179,26 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
               />
             </div>
 
-            {stage === "error" && errorMsg && (
+            {stage === "invalid" && (
               <p className="font-body text-center text-sm leading-relaxed text-destructive">
-                {errorMsg}
+                {invalidReason ?? "Não conseguimos validar. Por favor, envia a prova novamente."}
               </p>
             )}
 
             <div className="flex gap-3">
               <button
                 onClick={resetToIdle}
-                disabled={stage === "uploading" || stage === "completing"}
+                disabled={stage === "uploading" || stage === "validating"}
                 className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-background px-4 py-4 font-body text-sm font-semibold text-foreground transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100"
               >
                 <RotateCcw size={16} />
                 Tirar Outra
               </button>
               <button
-                onClick={handleSubmit}
-                disabled={stage === "uploading" || stage === "completing"}
+                onClick={handleValidate}
+                disabled={stage === "uploading" || stage === "validating"}
                 className={`flex flex-[1.4] items-center justify-center gap-2 rounded-lg px-4 py-4 font-body text-base font-semibold transition-all active:scale-95 disabled:active:scale-100 ${
-                  stage === "error"
+                  stage === "invalid"
                     ? "bg-destructive text-destructive-foreground"
                     : mission.isSpicy
                     ? "bg-accent text-accent-foreground"
@@ -183,24 +210,34 @@ const ActiveMission = ({ mission, onMissionComplete, onAdminSkip }: ActiveMissio
                     <Loader2 size={18} className="animate-spin" />
                     A enviar...
                   </>
-                ) : stage === "completing" ? (
+                ) : stage === "validating" ? (
                   <>
                     <Loader2 size={18} className="animate-spin" />
-                    A concluir...
+                    A verificar...
                   </>
-                ) : stage === "error" ? (
+                ) : stage === "invalid" ? (
                   <>
                     <RotateCcw size={18} />
-                    Tentar de Novo
+                    Validar de Novo
                   </>
                 ) : (
                   <>
                     <Check size={18} />
-                    Confirmar Prova
+                    Validar Prova
                   </>
                 )}
               </button>
             </div>
+
+            {stage === "invalid" && isAdmin && (
+              <button
+                onClick={handleAdminApprove}
+                className="flex items-center justify-center gap-2 rounded-lg border-2 border-accent bg-accent/10 px-4 py-3 font-body text-sm font-semibold text-accent transition-all active:scale-95"
+              >
+                <ShieldCheck size={16} />
+                Aprovar manualmente (admin)
+              </button>
+            )}
           </div>
         )}
 

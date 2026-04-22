@@ -1,10 +1,8 @@
 import { httpClient, ApiError } from "./httpClient";
 import type {
-  GameStateRequest,
-  GameStateResponse,
   IdentifyPlayerRequest,
   IdentifyPlayerResponse,
-  PersistedGameState,
+  PlayerCompletionResponse,
 } from "./types";
 
 /**
@@ -41,45 +39,15 @@ export const playersService = {
     }
   },
 
-  /** GET /api/v1/players/{playerId}/state */
-  async getState(playerId: number, signal?: AbortSignal): Promise<GameStateResponse | null> {
-    try {
-      return await httpClient.get<GameStateResponse>(
-        `/api/v1/players/${playerId}/state`,
-        { signal }
-      );
-    } catch (err) {
-      // No saved state yet → treat as empty progress.
-      if (err instanceof ApiError && err.status === 404) return null;
-      throw err;
-    }
-  },
-
-  /** PUT /api/v1/players/{playerId}/state */
-  async saveState(
+  /** GET /api/v1/players/{playerId}/completions */
+  async listCompletions(
     playerId: number,
-    body: GameStateRequest,
     signal?: AbortSignal
-  ): Promise<GameStateResponse> {
-    return await httpClient.put<GameStateResponse>(
-      `/api/v1/players/${playerId}/state`,
-      body,
+  ): Promise<PlayerCompletionResponse[]> {
+    const data = await httpClient.get<PlayerCompletionResponse[]>(
+      `/api/v1/players/${playerId}/completions`,
       { signal }
     );
-  },
-
-  /** Convenience: parse `stateJson` into the typed `PersistedGameState` shape. */
-  parseState(state: GameStateResponse | null): PersistedGameState {
-    if (!state?.stateJson) return { completedMissionIds: [] };
-    try {
-      const parsed = JSON.parse(state.stateJson) as Partial<PersistedGameState>;
-      return {
-        completedMissionIds: Array.isArray(parsed.completedMissionIds)
-          ? parsed.completedMissionIds.filter((n) => typeof n === "number")
-          : [],
-      };
-    } catch {
-      return { completedMissionIds: [] };
-    }
+    return Array.isArray(data) ? data : [];
   },
 };
