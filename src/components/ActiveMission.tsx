@@ -1,16 +1,19 @@
 import { useRef, useState } from "react";
-import { Camera, MapPin, Flame, Loader2, Check, RotateCcw } from "lucide-react";
+import { Camera, MapPin, Flame, Loader2, Check, RotateCcw, ShieldCheck, FastForward } from "lucide-react";
 import type { Mission } from "@/data/missions";
 import { validatePhoto } from "@/lib/validatePhoto";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ActiveMissionProps {
   mission: Mission;
   onPhotoUpload: (missionId: number, photo: string) => void;
+  onAdminSkip?: (missionId: number) => void;
 }
 
 type Stage = "idle" | "preview" | "validating" | "invalid";
 
-const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
+const ActiveMission = ({ mission, onPhotoUpload, onAdminSkip }: ActiveMissionProps) => {
+  const { isAdmin } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [stage, setStage] = useState<Stage>("idle");
   const [pendingPhoto, setPendingPhoto] = useState<string | null>(null);
@@ -60,7 +63,6 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
       });
       if (result.valid) {
         onPhotoUpload(mission.id, pendingPhoto);
-        // parent will swap this view; reset locally just in case
         setStage("idle");
         setPendingPhoto(null);
       } else {
@@ -75,7 +77,12 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
     }
   };
 
-  const accentColor = mission.isSpicy ? "accent" : "primary";
+  const handleAdminApprove = () => {
+    if (!pendingPhoto) return;
+    onPhotoUpload(mission.id, pendingPhoto);
+    setStage("idle");
+    setPendingPhoto(null);
+  };
 
   return (
     <div className="flex min-h-screen flex-col justify-center px-6 py-16 fade-in">
@@ -193,8 +200,29 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
                 )}
               </button>
             </div>
+
+            {stage === "invalid" && isAdmin && (
+              <button
+                onClick={handleAdminApprove}
+                className="flex items-center justify-center gap-2 rounded-lg border-2 border-accent bg-accent/10 px-4 py-3 font-body text-sm font-semibold text-accent transition-all active:scale-95"
+              >
+                <ShieldCheck size={16} />
+                Aprovar manualmente (admin)
+              </button>
+            )}
           </div>
         )}
+
+      {/* Admin: skip mission entirely */}
+      {isAdmin && stage === "idle" && onAdminSkip && (
+        <button
+          onClick={() => onAdminSkip(mission.id)}
+          className="mt-3 flex items-center justify-center gap-2 rounded-lg border border-dashed border-accent/60 bg-transparent px-4 py-3 font-body text-xs font-semibold uppercase tracking-wider text-accent transition-all active:scale-95"
+        >
+          <FastForward size={14} />
+          Saltar missão (admin)
+        </button>
+      )}
 
       <input
         ref={fileInputRef}
