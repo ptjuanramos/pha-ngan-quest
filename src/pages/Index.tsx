@@ -1,13 +1,18 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import ProgressBar from "@/components/ProgressBar";
+import LoginScreen from "@/components/LoginScreen";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import TreasureMap from "@/components/TreasureMap";
 import MissionSheet from "@/components/MissionSheet";
 import CompletedMissionModal from "@/components/CompletedMissionModal";
 import SignatureMoment from "@/components/SignatureMoment";
 import QuestComplete from "@/components/QuestComplete";
+import AdminBadge from "@/components/AdminBadge";
+import ResetProgressDialog from "@/components/ResetProgressDialog";
 import { missionsService } from "@/services";
 import type { MissionResponse } from "@/services/types";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "@/hooks/use-toast";
 
 const STORAGE_KEY = "kpn-quest";
 
@@ -31,9 +36,9 @@ function saveUiState(state: UiState) {
 }
 
 const Index = () => {
+  const { isAuthenticated, isAdmin } = useAuth();
   const [ui, setUi] = useState<UiState>(loadUiState);
   const [missions, setMissions] = useState<MissionResponse[]>([]);
-  /** In-memory cache of resolved photo data URLs, keyed by missionId. */
   const [photoCache, setPhotoCache] = useState<Record<number, string>>({});
   const [openMissionId, setOpenMissionId] = useState<number | null>(null);
   const [reviewMissionId, setReviewMissionId] = useState<number | null>(null);
@@ -42,6 +47,7 @@ const Index = () => {
     clue: string;
     missionId: number;
   } | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
 
   const inflightPhotoFetches = useRef<Set<number>>(new Set());
 
@@ -49,17 +55,26 @@ const Index = () => {
     saveUiState(ui);
   }, [ui]);
 
-  // Load missions from the service on mount.
-  useEffect(() => {
-    const controller = new AbortController();
-    missionsService
-      .loadAll(controller.signal)
+  const reloadMissions = useCallback((signal?: AbortSignal) => {
+    return missionsService
+      .loadAll(signal)
       .then(setMissions)
       .catch(() => {
         /* swallow for mock */
       });
-    return () => controller.abort();
   }, []);
+
+  // Load missions only after the user is authenticated.
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setMissions([]);
+      setPhotoCache({});
+      return;
+    }
+    const controller = new AbortController();
+    reloadMissions(controller.signal);
+    return () => controller.abort();
+  }, [isAuthenticated, reloadMissions]);
 
   // Lazy-fetch photo data only when the cache is empty for a completed mission.
   useEffect(() => {
@@ -94,11 +109,12 @@ const Index = () => {
       if (!mission) return;
       if (mission.isComplete) {
         setReviewMissionId(missionId);
-      } else if (missionId === activeMissionId) {
+      } else if (missionId === activeMissionId || isAdmin) {
+        // admins can open any mission
         setOpenMissionId(missionId);
       }
     },
-    [missions, activeMissionId]
+    [missions, activeMissionId, isAdmin]
   );
 
   const handlePhotoUpload = useCallback(
@@ -110,7 +126,6 @@ const Index = () => {
           dataUrl: photo,
         });
         await missionsService.complete(missionId, { photoId: upload.photoId });
-        // Optimistically update local state — acts as the cache.
         setPhotoCache((c) => ({ ...c, [missionId]: photo }));
         setMissions((list) =>
           list.map((m) =>
@@ -128,30 +143,77 @@ const Index = () => {
     [missions]
   );
 
+  const handleAdminSkip = useCallback(
+    async (missionId: number) => {
+      const mission = missions.find((m) => m.id === missionId);
+      if (!mission) return;
+      try {
+        await missionsService.adminSkip(missionId);
+        setMissions((list) =>
+          list.map((m) => (m.id === missionId ? { ...m, isComplete: true } : m))
+        );
+        setOpenMissionId(null);
+        toast({ title: "Missão saltada", description: `"${mission.title}" marcada como completa.` });
+      } catch {
+        toast({ title: "Erro", description: "Não foi possível saltar a missão.", variant: "destructive" });
+      }
+    },
+    [missions]
+  );
+
+  const handleReset = useCallback(
+    async (scope: "self" | "all") => {
+      try {
+        await missionsService.adminReset(scope);
+        setPhotoCache({});
+        await reloadMissions();
+        toast({
+          title: "Progresso reposto",
+          description: scope === "all" ? "Apagado para todos os jogadores." : "Apagado para o jogador atual.",
+        });
+      } catch {
+        toast({ title: "Erro", description: "Não foi possível repor o progresso.", variant: "destructive" });
+      }
+    },
+    [reloadMissions]
+  );
+
   const handleSignatureComplete = useCallback(() => {
     setSignatureMoment(null);
   }, []);
 
+  // ----- Render -----
+  if (!isAuthenticated) {
+    return (
+      <div className="paper-texture min-h-screen">
+        <LoginScreen />
+      </div>
+    );
+  }
+
   if (!ui.started) {
     return (
       <div className="paper-texture min-h-screen">
+        <AdminBadge onResetClick={() => setResetOpen(true)} />
         <WelcomeScreen onStart={handleStart} />
+        <ResetProgressDialog open={resetOpen} onOpenChange={setResetOpen} onConfirm={handleReset} />
       </div>
     );
   }
 
   if (missions.length === 0) {
-    // initial load
     return <div className="paper-texture min-h-screen" />;
   }
 
   if (isComplete) {
     return (
       <div className="paper-texture min-h-screen">
+        <AdminBadge onResetClick={() => setResetOpen(true)} />
         <ProgressBar completedMissions={completedCount} />
         <div className="pt-2">
           <QuestComplete photos={photoCache} />
         </div>
+        <ResetProgressDialog open={resetOpen} onOpenChange={setResetOpen} onConfirm={handleReset} />
       </div>
     );
   }
@@ -165,6 +227,7 @@ const Index = () => {
 
   return (
     <div className="paper-texture min-h-screen">
+      <AdminBadge onResetClick={() => setResetOpen(true)} />
       <ProgressBar completedMissions={completedCount} />
 
       <div className="pt-2">
@@ -180,6 +243,7 @@ const Index = () => {
           mission={openMission}
           onClose={() => setOpenMissionId(null)}
           onPhotoUpload={handlePhotoUpload}
+          onAdminSkip={isAdmin ? handleAdminSkip : undefined}
         />
       )}
 
@@ -198,6 +262,8 @@ const Index = () => {
           onComplete={handleSignatureComplete}
         />
       )}
+
+      <ResetProgressDialog open={resetOpen} onOpenChange={setResetOpen} onConfirm={handleReset} />
     </div>
   );
 };
