@@ -10,7 +10,7 @@ import QuestComplete from "@/components/QuestComplete";
 import AdminBadge from "@/components/AdminBadge";
 import ResetProgressDialog from "@/components/ResetProgressDialog";
 import { missionsService } from "@/services";
-import type { MissionResponse } from "@/services/types";
+import type { MissionWithProgress } from "@/services/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
