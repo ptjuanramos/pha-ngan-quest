@@ -1,5 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
-import { missions } from "@/data/missions";
+import { useState, useEffect, useCallback, useRef } from "react";
 import ProgressBar from "@/components/ProgressBar";
 import WelcomeScreen from "@/components/WelcomeScreen";
 import TreasureMap from "@/components/TreasureMap";
@@ -7,66 +6,35 @@ import MissionSheet from "@/components/MissionSheet";
 import CompletedMissionModal from "@/components/CompletedMissionModal";
 import SignatureMoment from "@/components/SignatureMoment";
 import QuestComplete from "@/components/QuestComplete";
+import { missionsService } from "@/services";
+import type { MissionResponse } from "@/services/types";
 
 const STORAGE_KEY = "kpn-quest";
 
-interface GameState {
+interface UiState {
   started: boolean;
-  photos: Record<number, string>;
-  completedCount: number;
 }
 
-function loadState(): GameState {
+function loadUiState(): UiState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    const base = raw ? JSON.parse(raw) : { started: false, completedCount: 0 };
-    const photos: Record<number, string> = {};
-    for (let i = 1; i <= 8; i++) {
-      const photo = localStorage.getItem(`${STORAGE_KEY}-photo-${i}`);
-      if (photo) photos[i] = photo;
-    }
-    return { ...base, photos };
-  } catch {}
-  return { started: false, photos: {}, completedCount: 0 };
+    return raw ? JSON.parse(raw) : { started: false };
+  } catch {
+    return { started: false };
+  }
 }
 
-function saveState(state: GameState) {
+function saveUiState(state: UiState) {
   try {
-    const { photos, ...rest } = state;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
-    for (const [id, data] of Object.entries(photos)) {
-      try {
-        localStorage.setItem(`${STORAGE_KEY}-photo-${id}`, data);
-      } catch {
-        compressAndStore(Number(id), data);
-      }
-    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
   } catch {}
-}
-
-function compressAndStore(missionId: number, dataUrl: string) {
-  const img = new Image();
-  img.onload = () => {
-    const canvas = document.createElement("canvas");
-    const maxDim = 400;
-    const scale = Math.min(maxDim / img.width, maxDim / img.height, 1);
-    canvas.width = img.width * scale;
-    canvas.height = img.height * scale;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-    try {
-      localStorage.setItem(
-        `${STORAGE_KEY}-photo-${missionId}`,
-        canvas.toDataURL("image/jpeg", 0.5)
-      );
-    } catch {}
-  };
-  img.src = dataUrl;
 }
 
 const Index = () => {
-  const [state, setState] = useState<GameState>(loadState);
+  const [ui, setUi] = useState<UiState>(loadUiState);
+  const [missions, setMissions] = useState<MissionResponse[]>([]);
+  /** In-memory cache of resolved photo data URLs, keyed by missionId. */
+  const [photoCache, setPhotoCache] = useState<Record<number, string>>({});
   const [openMissionId, setOpenMissionId] = useState<number | null>(null);
   const [reviewMissionId, setReviewMissionId] = useState<number | null>(null);
   const [signatureMoment, setSignatureMoment] = useState<{
@@ -75,49 +43,96 @@ const Index = () => {
     missionId: number;
   } | null>(null);
 
+  const inflightPhotoFetches = useRef<Set<number>>(new Set());
+
   useEffect(() => {
-    saveState(state);
-  }, [state]);
+    saveUiState(ui);
+  }, [ui]);
 
-  const handleStart = () => {
-    setState((s) => ({ ...s, started: true }));
-  };
+  // Load missions from the service on mount.
+  useEffect(() => {
+    const controller = new AbortController();
+    missionsService
+      .loadAll(controller.signal)
+      .then(setMissions)
+      .catch(() => {
+        /* swallow for mock */
+      });
+    return () => controller.abort();
+  }, []);
 
-  const activeMissionId = state.completedCount + 1;
+  // Lazy-fetch photo data only when the cache is empty for a completed mission.
+  useEffect(() => {
+    missions.forEach((m) => {
+      if (
+        m.photoUrl &&
+        photoCache[m.id] === undefined &&
+        !inflightPhotoFetches.current.has(m.id)
+      ) {
+        inflightPhotoFetches.current.add(m.id);
+        missionsService
+          .fetchPhoto(m.photoUrl)
+          .then((dataUrl) => {
+            if (dataUrl) {
+              setPhotoCache((c) => ({ ...c, [m.id]: dataUrl }));
+            }
+          })
+          .finally(() => inflightPhotoFetches.current.delete(m.id));
+      }
+    });
+  }, [missions, photoCache]);
+
+  const completedCount = missions.filter((m) => m.isComplete).length;
+  const activeMissionId = completedCount + 1;
+  const isComplete = missions.length > 0 && completedCount >= missions.length;
+
+  const handleStart = () => setUi((s) => ({ ...s, started: true }));
 
   const handleMarkerClick = useCallback(
     (missionId: number) => {
-      if (state.photos[missionId]) {
+      const mission = missions.find((m) => m.id === missionId);
+      if (!mission) return;
+      if (mission.isComplete) {
         setReviewMissionId(missionId);
       } else if (missionId === activeMissionId) {
         setOpenMissionId(missionId);
       }
-      // locked: no-op
     },
-    [state.photos, activeMissionId]
+    [missions, activeMissionId]
   );
 
-  const handlePhotoUpload = useCallback((missionId: number, photo: string) => {
-    const mission = missions.find((m) => m.id === missionId);
-    if (!mission) return;
-    setOpenMissionId(null);
-    setSignatureMoment({ photo, clue: mission.clue, missionId });
-  }, []);
+  const handlePhotoUpload = useCallback(
+    async (missionId: number, photo: string) => {
+      const mission = missions.find((m) => m.id === missionId);
+      if (!mission) return;
+      try {
+        const upload = await missionsService.uploadPhoto(missionId, {
+          dataUrl: photo,
+        });
+        await missionsService.complete(missionId, { photoId: upload.photoId });
+        // Optimistically update local state — acts as the cache.
+        setPhotoCache((c) => ({ ...c, [missionId]: photo }));
+        setMissions((list) =>
+          list.map((m) =>
+            m.id === missionId
+              ? { ...m, isComplete: true, photoUrl: upload.photoUrl }
+              : m
+          )
+        );
+        setOpenMissionId(null);
+        setSignatureMoment({ photo, clue: mission.clue, missionId });
+      } catch {
+        // surface as upload failure — caller already handled UI states; no-op here
+      }
+    },
+    [missions]
+  );
 
   const handleSignatureComplete = useCallback(() => {
-    if (!signatureMoment) return;
-    const { missionId, photo } = signatureMoment;
-    setState((s) => ({
-      ...s,
-      photos: { ...s.photos, [missionId]: photo },
-      completedCount: s.completedCount + 1,
-    }));
     setSignatureMoment(null);
-  }, [signatureMoment]);
+  }, []);
 
-  const isComplete = state.completedCount >= missions.length;
-
-  if (!state.started) {
+  if (!ui.started) {
     return (
       <div className="paper-texture min-h-screen">
         <WelcomeScreen onStart={handleStart} />
@@ -125,12 +140,17 @@ const Index = () => {
     );
   }
 
+  if (missions.length === 0) {
+    // initial load
+    return <div className="paper-texture min-h-screen" />;
+  }
+
   if (isComplete) {
     return (
       <div className="paper-texture min-h-screen">
-        <ProgressBar completedMissions={state.completedCount} />
+        <ProgressBar completedMissions={completedCount} />
         <div className="pt-2">
-          <QuestComplete photos={state.photos} />
+          <QuestComplete photos={photoCache} />
         </div>
       </div>
     );
@@ -145,12 +165,12 @@ const Index = () => {
 
   return (
     <div className="paper-texture min-h-screen">
-      <ProgressBar completedMissions={state.completedCount} />
+      <ProgressBar completedMissions={completedCount} />
 
       <div className="pt-2">
         <TreasureMap
-          completedCount={state.completedCount}
-          photos={state.photos}
+          missions={missions}
+          completedCount={completedCount}
           onMarkerClick={handleMarkerClick}
         />
       </div>
@@ -163,10 +183,10 @@ const Index = () => {
         />
       )}
 
-      {reviewMission && (
+      {reviewMission && photoCache[reviewMission.id] && (
         <CompletedMissionModal
           mission={reviewMission}
-          photo={state.photos[reviewMission.id]}
+          photo={photoCache[reviewMission.id]}
           onClose={() => setReviewMissionId(null)}
         />
       )}
