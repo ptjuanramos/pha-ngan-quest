@@ -1,28 +1,27 @@
 import { missions as missionSeed } from "@/data/missions";
 import { httpClient, ApiError } from "./httpClient";
 import type {
+  ApprovePhotoRequest,
+  ApprovePhotoResponse,
   CompleteMissionRequest,
   CompleteMissionResponse,
   MissionResponse,
   MissionWithProgress,
-  UploadPhotoRequest,
+  PhotoResponse,
+  PlayerCompletionResponse,
   UploadPhotoResponse,
+  UploadPhotoRequest,
 } from "./types";
 
 /**
  * Missions service.
  *
- * Each method first attempts a real HTTP call against the backend (so requests
- * are visible in the browser network tab and easy to wire up once the API is
- * live). If the request fails — typically because the endpoint does not exist
- * yet — we transparently fall back to a `localStorage`-backed mock so the full
- * UI flow stays exercisable end-to-end.
- *
- * Once the backend is ready, the fallbacks can simply be deleted.
+ * Wraps `/api/v1/missions/*` endpoints. When the backend is unreachable a
+ * `localStorage`-backed mock is used so the UI stays interactive in dev.
  */
 
 const STORE_COMPLETED = "mock-backend:missions:completed";
-const STORE_PHOTOS = "mock-backend:missions:photos"; // { [missionId]: { photoId, dataUrl } }
+const STORE_PHOTOS = "mock-backend:missions:photos";
 const PHOTO_URL_PREFIX = "mock://photo/";
 
 interface StoredPhoto {
@@ -43,7 +42,7 @@ function writeJson(key: string, value: unknown) {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    // ignore quota errors in mock
+    /* ignore quota errors in mock */
   }
 }
 
@@ -55,60 +54,103 @@ function getPhotos(): Record<number, StoredPhoto> {
   return readJson<Record<number, StoredPhoto>>(STORE_PHOTOS, {});
 }
 
-/** True for transport / 404-style failures where we should fall back to mock. */
 function isBackendUnavailable(err: unknown): boolean {
   if (err instanceof ApiError) {
     return err.status === 0 || err.status === 404 || err.status >= 500;
   }
-  // network errors, JSON parse errors, etc.
   return true;
 }
 
-function buildMockMissions(base?: MissionResponse[]): MissionWithProgress[] {
-  const completed = getCompleted();
-  const photos = getPhotos();
-  const source = base ?? missionSeed;
-  return source.map((m) => ({
+/** Build mission list from seed (used as the dev fallback). */
+function mockMissions(base?: MissionResponse[]): MissionResponse[] {
+  return (base ?? missionSeed).map((m) => ({
     id: m.id,
     title: m.title,
     clue: m.clue,
     locationHint: m.locationHint,
     challenge: m.challenge,
     isSpicy: m.isSpicy,
-    isComplete: !!completed[m.id],
-    photoUrl: photos[m.id] ? `${PHOTO_URL_PREFIX}${m.id}` : null,
+  }));
+}
+
+/**
+ * Combine raw missions + the player's completions into a single list the UI
+ * can render without further joins.
+ */
+export function mergeMissionsWithCompletions(
+  missions: MissionResponse[],
+  completions: PlayerCompletionResponse[]
+): MissionWithProgress[] {
+  const completedSet = new Set(completions.map((c) => c.missionId));
+  const photos = getPhotos();
+  return missions.map((m) => ({
+    ...m,
+    isComplete: completedSet.has(m.id),
+    // Photo references are resolved lazily via `getPhoto` on the server, or
+    // pulled from the local mock store in dev.
+    photoUrl: completedSet.has(m.id)
+      ? photos[m.id]
+        ? `${PHOTO_URL_PREFIX}${m.id}`
+        : `server://photo/${m.id}`
+      : null,
   }));
 }
 
 export const missionsService = {
   /** GET /api/v1/missions */
-  async loadAll(signal?: AbortSignal): Promise<MissionWithProgress[]> {
+  async loadAll(signal?: AbortSignal): Promise<MissionResponse[]> {
     try {
       const data = await httpClient.get<MissionResponse[]>("/api/v1/missions", { signal });
-      if (!Array.isArray(data)) {
-        // Backend returned a non-array payload (e.g. dev server HTML fallback).
-        return buildMockMissions();
-      }
-      // Augment server data with locally-tracked completion + photo references.
-      return buildMockMissions(data);
+      if (!Array.isArray(data)) return mockMissions();
+      return data;
     } catch (err) {
       if (!isBackendUnavailable(err)) throw err;
-      return buildMockMissions();
+      return mockMissions();
     }
   },
 
   /**
-   * Resolve a `photoUrl` returned by `loadAll` into the actual data URL.
-   * The frontend should only call this when its local cache is empty.
+   * GET /api/v1/players/{playerId}/missions/{missionId}/photo
+   * Returns the photo metadata (including blobUrl) for a player's mission.
    */
-  async fetchPhoto(photoUrl: string, signal?: AbortSignal): Promise<string | null> {
-    // Mock-issued URLs short-circuit to localStorage.
-    if (photoUrl.startsWith(PHOTO_URL_PREFIX)) {
-      const missionId = Number(photoUrl.slice(PHOTO_URL_PREFIX.length));
+  async getPhoto(
+    playerId: number,
+    missionId: number,
+    signal?: AbortSignal
+  ): Promise<PhotoResponse | null> {
+    try {
+      return await httpClient.get<PhotoResponse>(
+        `/api/v1/players/${playerId}/missions/${missionId}/photo`,
+        { signal }
+      );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      const stored = getPhotos()[missionId];
+      if (!stored) return null;
+      return {
+        photoId: stored.photoId,
+        blobUrl: `${PHOTO_URL_PREFIX}${missionId}`,
+        validationStatus: "APPROVED",
+      };
+    }
+  },
+
+  /**
+   * Resolve a `blobUrl` (or mock pointer) into a base64 data URL the UI can
+   * render directly inside an <img>.
+   */
+  async fetchPhotoData(blobUrl: string, signal?: AbortSignal): Promise<string | null> {
+    if (blobUrl.startsWith(PHOTO_URL_PREFIX)) {
+      const missionId = Number(blobUrl.slice(PHOTO_URL_PREFIX.length));
+      return getPhotos()[missionId]?.dataUrl ?? null;
+    }
+    if (blobUrl.startsWith("server://photo/")) {
+      // Mock placeholder when the server has no photo yet.
+      const missionId = Number(blobUrl.slice("server://photo/".length));
       return getPhotos()[missionId]?.dataUrl ?? null;
     }
     try {
-      const res = await fetch(photoUrl, { signal });
+      const res = await fetch(blobUrl, { signal });
       if (!res.ok) return null;
       const blob = await res.blob();
       return await new Promise<string>((resolve, reject) => {
@@ -143,6 +185,8 @@ export const missionsService = {
       return {
         photoId,
         missionId,
+        blobUrl: `${PHOTO_URL_PREFIX}${missionId}`,
+        validationStatus: "PENDING",
       };
     }
   },
@@ -172,14 +216,50 @@ export const missionsService = {
     }
   },
 
-  /** Admin-only: skip a mission without uploading a photo. */
-  async adminSkip(missionId: number, signal?: AbortSignal): Promise<CompleteMissionResponse> {
+  /**
+   * POST /api/v1/missions/{missionId}/photos/{photoId}/approve  (admin-only)
+   * Manually approve (or reject) a photo when AI validation fails.
+   */
+  async approvePhoto(
+    missionId: number,
+    photoId: number,
+    body: ApprovePhotoRequest,
+    signal?: AbortSignal
+  ): Promise<ApprovePhotoResponse> {
     try {
-      return await httpClient.post<CompleteMissionResponse>(
-        `/api/v1/missions/${missionId}/skip`,
-        {},
+      return await httpClient.post<ApprovePhotoResponse>(
+        `/api/v1/missions/${missionId}/photos/${photoId}/approve`,
+        body,
         { signal }
       );
+    } catch (err) {
+      if (!isBackendUnavailable(err)) throw err;
+      return {
+        photoId,
+        validationStatus: body.approved ? "APPROVED" : "REJECTED",
+      };
+    }
+  },
+
+  /**
+   * Admin-only convenience: skip a mission entirely. The spec doesn't expose
+   * a dedicated endpoint, so we synthesize one by uploading a marker photo
+   * and completing the mission. In dev/mock this is a pure local toggle.
+   */
+  async adminSkip(missionId: number, signal?: AbortSignal): Promise<CompleteMissionResponse> {
+    try {
+      const upload = await this.uploadPhoto(
+        missionId,
+        { base64Content: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=" },
+        signal
+      );
+      // Auto-approve so completion succeeds even without AI validation.
+      try {
+        await this.approvePhoto(missionId, upload.photoId, { approved: true }, signal);
+      } catch {
+        /* ignore — backend may auto-approve admin uploads */
+      }
+      return await this.complete(missionId, { photoId: upload.photoId }, signal);
     } catch (err) {
       if (!isBackendUnavailable(err)) throw err;
       const completed = getCompleted();
@@ -194,23 +274,17 @@ export const missionsService = {
   },
 
   /**
-   * Admin-only: reset progress.
-   * - "self" wipes the current player's progress.
-   * - "all" wipes every player's progress (mock falls back to local wipe).
+   * Admin-only: reset progress. The spec has no dedicated endpoint yet, so we
+   * fall back to a local wipe of the mock stores.
    */
-  async adminReset(scope: "self" | "all", signal?: AbortSignal): Promise<{ ok: true }> {
+  async adminReset(_scope: "self" | "all"): Promise<{ ok: true }> {
     try {
-      await httpClient.post(`/api/v1/admin/reset`, { scope }, { signal });
-      return { ok: true };
-    } catch (err) {
-      if (!isBackendUnavailable(err)) throw err;
-      try {
-        localStorage.removeItem(STORE_COMPLETED);
-        localStorage.removeItem(STORE_PHOTOS);
-      } catch {
-        // ignore
-      }
-      return { ok: true };
+      localStorage.removeItem(STORE_COMPLETED);
+      localStorage.removeItem(STORE_PHOTOS);
+      sessionStorage.removeItem("kpn-photo-cache");
+    } catch {
+      /* ignore */
     }
+    return { ok: true };
   },
 };
