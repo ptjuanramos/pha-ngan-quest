@@ -52,7 +52,7 @@ export interface CompleteMissionResponse {
 
 // ----- Players -----
 export interface IdentifyPlayerRequest {
-  deviceToken: string;
+  username: string;
 }
 
 export interface IdentifyPlayerResponse {

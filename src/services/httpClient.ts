@@ -16,6 +16,15 @@ export class ApiError extends Error {
   }
 }
 
+/** Auth token holder — set by the auth layer, read on every request. */
+let authToken: string | null = null;
+export function setAuthToken(token: string | null) {
+  authToken = token;
+}
+export function getAuthToken(): string | null {
+  return authToken;
+}
+
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
   body?: unknown;
@@ -23,19 +32,20 @@ interface RequestOptions {
   signal?: AbortSignal;
 }
 
-/**
- * Thin fetch wrapper that unwraps the standard `ApiResponse<T>` envelope
- * and throws an `ApiError` for non-2xx responses or non-null `error` fields.
- */
 async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
   const { method = "GET", body, headers = {}, signal } = opts;
 
+  const finalHeaders: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...headers,
+  };
+  if (authToken && !finalHeaders["Authorization"]) {
+    finalHeaders["Authorization"] = `Bearer ${authToken}`;
+  }
+
   const res = await fetch(`${BASE_URL}${path}`, {
     method,
-    headers: {
-      "Content-Type": "application/json",
-      ...headers,
-    },
+    headers: finalHeaders,
     body: body !== undefined ? JSON.stringify(body) : undefined,
     signal,
   });
@@ -59,7 +69,7 @@ async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
     throw new ApiError(payload.error, res.status);
   }
 
-  return (payload?.data as T);
+  return payload?.data as T;
 }
 
 export const httpClient = {
