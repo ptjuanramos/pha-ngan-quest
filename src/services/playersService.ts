@@ -21,7 +21,16 @@ const STORE_STATE = "mock-backend:player-state";
 interface StoredPlayer {
   playerId: number;
   token: string;
-  deviceToken: string;
+  username: string;
+}
+
+/** Build a fake but valid-looking JWT (header.payload.signature) for the mock. */
+function buildMockJwt(payload: Record<string, unknown>): string {
+  const enc = (obj: unknown) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const header = enc({ alg: "none", typ: "JWT" });
+  const body = enc(payload);
+  return `${header}.${body}.mock-signature`;
 }
 
 function readJson<T>(key: string, fallback: T | null = null): T | null {
