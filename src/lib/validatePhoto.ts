@@ -12,6 +12,9 @@ export interface ValidatePhotoResult {
   reason?: string;
 }
 
+const DEFAULT_INVALID_REASON =
+  "Não conseguimos validar. Por favor, envia a prova novamente.";
+
 /**
  * Thin adapter around `photoValidationService`. Kept for backwards-compat
  * with existing callers — new code should call the service directly.
@@ -19,10 +22,19 @@ export interface ValidatePhotoResult {
 export async function validatePhoto(
   input: ValidatePhotoInput
 ): Promise<ValidatePhotoResult> {
-  return photoValidationService.validate({
+  const result = await photoValidationService.validate({
     dataUrl: input.photo,
     missionId: input.missionId,
     challenge: input.challenge,
     title: input.title,
   });
+
+  if (!result.valid) {
+    return {
+      valid: false,
+      reason: result.reason ?? DEFAULT_INVALID_REASON,
+    };
+  }
+
+  return { valid: true };
 }

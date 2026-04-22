@@ -149,9 +149,9 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
               />
             </div>
 
-            {stage === "invalid" && invalidReason && (
-              <p className="font-body text-sm leading-relaxed text-destructive text-center">
-                {invalidReason}
+            {stage === "invalid" && (
+              <p className="font-body text-center text-sm leading-relaxed text-destructive">
+                {invalidReason ?? "Não conseguimos validar. Por favor, envia a prova novamente."}
               </p>
             )}
 
