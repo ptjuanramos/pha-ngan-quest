@@ -18,26 +18,26 @@ export interface MissionResponse {
   locationHint: string;
   challenge: string;
   isSpicy: boolean;
-  /** Whether this mission has already been completed by the current player. */
+}
+
+/**
+ * Client-side augmented mission, including local completion + photo state
+ * that the backend does not (currently) return per-player.
+ */
+export interface MissionWithProgress extends MissionResponse {
   isComplete: boolean;
-  /**
-   * URL (or opaque reference) to the proof photo blob, when available.
-   * `null` until the player uploads a photo for this mission.
-   * The frontend lazily resolves this URL into image data only when its
-   * local state cache is empty.
-   */
+  /** Opaque reference used by the client to resolve the proof photo. */
   photoUrl: string | null;
 }
 
 export interface UploadPhotoRequest {
-  dataUrl: string;
+  /** Base64-encoded image content (data URL or raw base64). */
+  base64Content: string;
 }
 
 export interface UploadPhotoResponse {
   photoId: number;
   missionId: number;
-  /** URL to retrieve the stored photo blob. */
-  photoUrl: string;
 }
 
 export interface CompleteMissionRequest {
