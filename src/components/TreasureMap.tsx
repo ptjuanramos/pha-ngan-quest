@@ -47,7 +47,7 @@ const TreasureMap = ({ completedCount, photos, onMarkerClick }: TreasureMapProps
   return (
     <div
       ref={containerRef}
-      className="parchment-bg relative mx-auto w-full max-w-md overflow-hidden"
+      className="parchment-bg relative w-full overflow-hidden"
       style={{ minHeight: totalHeight }}
     >
       {/* Header */}
