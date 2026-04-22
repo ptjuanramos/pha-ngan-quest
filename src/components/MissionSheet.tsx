@@ -7,9 +7,10 @@ interface MissionSheetProps {
   mission: Mission;
   onClose: () => void;
   onPhotoUpload: (missionId: number, photo: string) => void;
+  onAdminSkip?: (missionId: number) => void;
 }
 
-const MissionSheet = ({ mission, onClose, onPhotoUpload }: MissionSheetProps) => {
+const MissionSheet = ({ mission, onClose, onPhotoUpload, onAdminSkip }: MissionSheetProps) => {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -32,7 +33,11 @@ const MissionSheet = ({ mission, onClose, onPhotoUpload }: MissionSheetProps) =>
       >
         <X size={20} />
       </button>
-      <ActiveMission mission={mission} onPhotoUpload={onPhotoUpload} />
+      <ActiveMission
+        mission={mission}
+        onPhotoUpload={onPhotoUpload}
+        onAdminSkip={onAdminSkip}
+      />
     </div>
   );
 };

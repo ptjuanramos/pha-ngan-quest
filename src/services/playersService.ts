@@ -21,7 +21,16 @@ const STORE_STATE = "mock-backend:player-state";
 interface StoredPlayer {
   playerId: number;
   token: string;
-  deviceToken: string;
+  username: string;
+}
+
+/** Build a fake but valid-looking JWT (header.payload.signature) for the mock. */
+function buildMockJwt(payload: Record<string, unknown>): string {
+  const enc = (obj: unknown) =>
+    btoa(JSON.stringify(obj)).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+  const header = enc({ alg: "none", typ: "JWT" });
+  const body = enc(payload);
+  return `${header}.${body}.mock-signature`;
 }
 
 function readJson<T>(key: string, fallback: T | null = null): T | null {
@@ -62,17 +71,28 @@ export const playersService = {
       );
     } catch (err) {
       if (!isBackendUnavailable(err)) throw err;
+      const username = body.username.trim();
+      if (!username) {
+        throw new ApiError(
+          { code: "INVALID_USERNAME", message: "Username é obrigatório." },
+          400
+        );
+      }
       const existing = readJson<StoredPlayer>(STORE_PLAYER);
-      if (existing && existing.deviceToken === body.deviceToken) {
+      if (existing && existing.username === username) {
         return { playerId: existing.playerId, token: existing.token };
       }
-      const player: StoredPlayer = {
-        playerId: Date.now(),
-        token: `mock-token-${Math.random().toString(36).slice(2, 10)}`,
-        deviceToken: body.deviceToken,
-      };
+      const isAdmin = /admin/i.test(username);
+      const playerId = Date.now();
+      const token = buildMockJwt({
+        sub: String(playerId),
+        username,
+        is_admin: isAdmin,
+        exp: Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 30,
+      });
+      const player: StoredPlayer = { playerId, token, username };
       writeJson(STORE_PLAYER, player);
-      return { playerId: player.playerId, token: player.token };
+      return { playerId, token };
     }
   },
 
