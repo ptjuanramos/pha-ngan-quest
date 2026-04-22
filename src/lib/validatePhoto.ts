@@ -1,3 +1,5 @@
+import { photoValidationService } from "@/services/photoValidationService";
+
 export interface ValidatePhotoInput {
   photo: string; // base64 data URL
   missionId: number;
@@ -11,22 +13,16 @@ export interface ValidatePhotoResult {
 }
 
 /**
- * Validate a mission photo against its challenge.
- *
- * TODO: replace this mock with a real backend call, e.g.:
- *
- *   const res = await fetch("/api/validate-photo", {
- *     method: "POST",
- *     headers: { "Content-Type": "application/json" },
- *     body: JSON.stringify(input),
- *   });
- *   if (!res.ok) throw new Error("Validation request failed");
- *   return (await res.json()) as ValidatePhotoResult;
+ * Thin adapter around `photoValidationService`. Kept for backwards-compat
+ * with existing callers — new code should call the service directly.
  */
 export async function validatePhoto(
-  _input: ValidatePhotoInput
+  input: ValidatePhotoInput
 ): Promise<ValidatePhotoResult> {
-  // Temporary mock so the UI flow is testable end-to-end.
-  await new Promise((resolve) => setTimeout(resolve, 800));
-  return { valid: true };
+  return photoValidationService.validate({
+    dataUrl: input.photo,
+    missionId: input.missionId,
+    challenge: input.challenge,
+    title: input.title,
+  });
 }
