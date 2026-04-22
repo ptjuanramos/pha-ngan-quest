@@ -65,15 +65,13 @@ const ActiveMission = ({ mission, onPhotoUpload }: ActiveMissionProps) => {
         setPendingPhoto(null);
       } else {
         setInvalidReason(
-          result.reason ?? "Hmm, não parece corresponder à missão. Tenta outra vez?"
+          result.reason ?? "Não conseguimos validar. Por favor, envia a prova novamente."
         );
         setStage("invalid");
-        setPendingPhoto(null);
       }
     } catch {
-      setInvalidReason("Não conseguimos validar agora. Tenta outra vez.");
+      setInvalidReason("Não conseguimos validar agora. Por favor, envia a prova novamente.");
       setStage("invalid");
-      setPendingPhoto(null);
     }
   };
 
