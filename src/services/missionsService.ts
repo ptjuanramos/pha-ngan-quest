@@ -82,7 +82,12 @@ export const missionsService = {
   /** GET /api/v1/missions */
   async loadAll(signal?: AbortSignal): Promise<MissionResponse[]> {
     try {
-      return await httpClient.get<MissionResponse[]>("/api/v1/missions", { signal });
+      const data = await httpClient.get<MissionResponse[]>("/api/v1/missions", { signal });
+      if (!Array.isArray(data)) {
+        // Backend returned a non-array payload (e.g. dev server HTML fallback).
+        return buildMockMissions();
+      }
+      return data;
     } catch (err) {
       if (!isBackendUnavailable(err)) throw err;
       return buildMockMissions();
