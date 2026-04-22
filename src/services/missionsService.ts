@@ -4,6 +4,7 @@ import type {
   CompleteMissionRequest,
   CompleteMissionResponse,
   MissionResponse,
+  MissionWithProgress,
   UploadPhotoRequest,
   UploadPhotoResponse,
 } from "./types";
