@@ -57,6 +57,12 @@ function isBackendUnavailable(err: unknown): boolean {
   return true;
 }
 
+function friendlyAuthMessage(status: number): string {
+  if (status === 401) return "Não autorizado. Verifica o teu nome e tenta novamente.";
+  if (status === 403) return "Acesso negado. Não tens permissão para entrar.";
+  return "Não foi possível autenticar.";
+}
+
 export const playersService = {
   /** POST /api/v1/players/identify */
   async identify(
