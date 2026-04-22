@@ -9,12 +9,14 @@ import SignatureMoment from "@/components/SignatureMoment";
 import QuestComplete from "@/components/QuestComplete";
 import AdminBadge from "@/components/AdminBadge";
 import ResetProgressDialog from "@/components/ResetProgressDialog";
-import { missionsService } from "@/services";
+import { missionsService, playersService } from "@/services";
+import { mergeMissionsWithCompletions } from "@/services/missionsService";
 import type { MissionWithProgress } from "@/services/types";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "@/hooks/use-toast";
 
 const STORAGE_KEY = "kpn-quest";
+const PHOTO_CACHE_KEY = "kpn-photo-cache";
 
 interface UiState {
   started: boolean;
@@ -35,8 +37,25 @@ function saveUiState(state: UiState) {
   } catch {}
 }
 
+/** Per-session photo cache, keyed by `${playerId}:${missionId}` -> dataURL. */
+function readPhotoCache(): Record<string, string> {
+  try {
+    const raw = sessionStorage.getItem(PHOTO_CACHE_KEY);
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    return {};
+  }
+}
+function writePhotoCache(cache: Record<string, string>) {
+  try {
+    sessionStorage.setItem(PHOTO_CACHE_KEY, JSON.stringify(cache));
+  } catch {
+    /* ignore quota */
+  }
+}
+
 const Index = () => {
-  const { isAuthenticated, isAdmin } = useAuth();
+  const { isAuthenticated, isAdmin, playerId } = useAuth();
   const [ui, setUi] = useState<UiState>(loadUiState);
   const [missions, setMissions] = useState<MissionWithProgress[]>([]);
   const [photoCache, setPhotoCache] = useState<Record<number, string>>({});
@@ -55,47 +74,81 @@ const Index = () => {
     saveUiState(ui);
   }, [ui]);
 
-  const reloadMissions = useCallback((signal?: AbortSignal) => {
-    return missionsService
-      .loadAll(signal)
-      .then(setMissions)
-      .catch(() => {
-        /* swallow for mock */
-      });
-  }, []);
+  /**
+   * Reload the full game state for the current player:
+   *  - GET /api/v1/missions
+   *  - GET /api/v1/players/{playerId}/completions
+   *  Then merge them into the UI's `MissionWithProgress[]` shape.
+   */
+  const reloadState = useCallback(
+    async (signal?: AbortSignal) => {
+      if (!playerId) return;
+      try {
+        const [rawMissions, completions] = await Promise.all([
+          missionsService.loadAll(signal),
+          playersService.listCompletions(playerId, signal),
+        ]);
+        setMissions(mergeMissionsWithCompletions(rawMissions, completions));
+      } catch {
+        /* swallow — keeps current state */
+      }
+    },
+    [playerId]
+  );
 
-  // Load missions only after the user is authenticated.
+  // Load missions + completions only after the user is authenticated.
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!isAuthenticated || !playerId) {
       setMissions([]);
       setPhotoCache({});
       return;
     }
-    const controller = new AbortController();
-    reloadMissions(controller.signal);
-    return () => controller.abort();
-  }, [isAuthenticated, reloadMissions]);
+    // Hydrate the in-memory photo cache from session storage so navigations
+    // don't trigger redundant photo fetches.
+    const sessionCache = readPhotoCache();
+    const scoped: Record<number, string> = {};
+    Object.entries(sessionCache).forEach(([key, value]) => {
+      const [pid, mid] = key.split(":");
+      if (Number(pid) === playerId) scoped[Number(mid)] = value;
+    });
+    setPhotoCache(scoped);
 
-  // Lazy-fetch photo data only when the cache is empty for a completed mission.
+    const controller = new AbortController();
+    reloadState(controller.signal);
+    return () => controller.abort();
+  }, [isAuthenticated, playerId, reloadState]);
+
+  // Lazy-fetch photo data for completed missions whose photo isn't cached yet.
   useEffect(() => {
+    if (!playerId) return;
     missions.forEach((m) => {
       if (
-        m.photoUrl &&
+        m.isComplete &&
         photoCache[m.id] === undefined &&
         !inflightPhotoFetches.current.has(m.id)
       ) {
         inflightPhotoFetches.current.add(m.id);
-        missionsService
-          .fetchPhoto(m.photoUrl)
-          .then((dataUrl) => {
-            if (dataUrl) {
-              setPhotoCache((c) => ({ ...c, [m.id]: dataUrl }));
-            }
-          })
-          .finally(() => inflightPhotoFetches.current.delete(m.id));
+        (async () => {
+          try {
+            const meta = await missionsService.getPhoto(playerId, m.id);
+            if (!meta) return;
+            const dataUrl = await missionsService.fetchPhotoData(meta.blobUrl);
+            if (!dataUrl) return;
+            setPhotoCache((c) => {
+              const next = { ...c, [m.id]: dataUrl };
+              // Persist to sessionStorage so it survives reloads/route changes.
+              const sessionCache = readPhotoCache();
+              sessionCache[`${playerId}:${m.id}`] = dataUrl;
+              writePhotoCache(sessionCache);
+              return next;
+            });
+          } finally {
+            inflightPhotoFetches.current.delete(m.id);
+          }
+        })();
       }
     });
-  }, [missions, photoCache]);
+  }, [missions, photoCache, playerId]);
 
   const completedCount = missions.filter((m) => m.isComplete).length;
   const activeMissionId = completedCount + 1;
@@ -110,37 +163,39 @@ const Index = () => {
       if (mission.isComplete) {
         setReviewMissionId(missionId);
       } else if (missionId === activeMissionId || isAdmin) {
-        // admins can open any mission
         setOpenMissionId(missionId);
       }
     },
     [missions, activeMissionId, isAdmin]
   );
 
-  const handlePhotoUpload = useCallback(
-    async (missionId: number, photo: string) => {
+  /**
+   * Called by `ActiveMission` after upload + validation + complete have all
+   * succeeded server-side. We just need to reflect it in the UI and prime
+   * the photo cache.
+   */
+  const handleMissionComplete = useCallback(
+    (missionId: number, photo: string) => {
       const mission = missions.find((m) => m.id === missionId);
-      if (!mission) return;
-      try {
-        const upload = await missionsService.uploadPhoto(missionId, {
-          base64Content: photo,
-        });
-        await missionsService.complete(missionId, { photoId: upload.photoId });
-        setPhotoCache((c) => ({ ...c, [missionId]: photo }));
-        setMissions((list) =>
-          list.map((m) =>
-            m.id === missionId
-              ? { ...m, isComplete: true, photoUrl: `client://photo/${missionId}` }
-              : m
-          )
-        );
-        setOpenMissionId(null);
-        setSignatureMoment({ photo, clue: mission.clue, missionId });
-      } catch {
-        // surface as upload failure — caller already handled UI states; no-op here
-      }
+      if (!mission || !playerId) return;
+      setPhotoCache((c) => {
+        const next = { ...c, [missionId]: photo };
+        const sessionCache = readPhotoCache();
+        sessionCache[`${playerId}:${missionId}`] = photo;
+        writePhotoCache(sessionCache);
+        return next;
+      });
+      setMissions((list) =>
+        list.map((m) =>
+          m.id === missionId
+            ? { ...m, isComplete: true, photoUrl: m.photoUrl ?? `client://photo/${missionId}` }
+            : m
+        )
+      );
+      setOpenMissionId(null);
+      setSignatureMoment({ photo, clue: mission.clue, missionId });
     },
-    [missions]
+    [missions, playerId]
   );
 
   const handleAdminSkip = useCallback(
@@ -166,7 +221,12 @@ const Index = () => {
       try {
         await missionsService.adminReset(scope);
         setPhotoCache({});
-        await reloadMissions();
+        try {
+          sessionStorage.removeItem(PHOTO_CACHE_KEY);
+        } catch {
+          /* ignore */
+        }
+        await reloadState();
         toast({
           title: "Progresso reposto",
           description: scope === "all" ? "Apagado para todos os jogadores." : "Apagado para o jogador atual.",
@@ -175,7 +235,7 @@ const Index = () => {
         toast({ title: "Erro", description: "Não foi possível repor o progresso.", variant: "destructive" });
       }
     },
-    [reloadMissions]
+    [reloadState]
   );
 
   const handleSignatureComplete = useCallback(() => {
@@ -242,7 +302,7 @@ const Index = () => {
         <MissionSheet
           mission={openMission}
           onClose={() => setOpenMissionId(null)}
-          onPhotoUpload={handlePhotoUpload}
+          onMissionComplete={handleMissionComplete}
           onAdminSkip={isAdmin ? handleAdminSkip : undefined}
         />
       )}
