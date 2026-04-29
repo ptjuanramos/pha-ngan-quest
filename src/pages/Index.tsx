@@ -8,6 +8,7 @@ import CompletedMissionModal from "@/components/CompletedMissionModal";
 import SignatureMoment from "@/components/SignatureMoment";
 import QuestComplete from "@/components/QuestComplete";
 import AdminBadge from "@/components/AdminBadge";
+import AdminDashboard from "@/components/AdminDashboard";
 import ResetProgressDialog from "@/components/ResetProgressDialog";
 import { missionsService, playersService } from "@/services";
 import { mergeMissionsWithCompletions } from "@/services/missionsService";
