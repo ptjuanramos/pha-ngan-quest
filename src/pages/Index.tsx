@@ -249,6 +249,16 @@ const Index = () => {
     );
   }
 
+  // Admins go straight to the overview dashboard — they don't play the quest.
+  if (isAdmin) {
+    return (
+      <div className="paper-texture min-h-screen">
+        <AdminBadge />
+        <AdminDashboard />
+      </div>
+    );
+  }
+
   if (!ui.started) {
     return (
       <div className="paper-texture min-h-screen">
