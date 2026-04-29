@@ -1,16 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
-import { Check, Clock, Minus, RefreshCw, RotateCcw } from "lucide-react";
+import { Check, Clock, Minus, RefreshCw, RotateCcw, X } from "lucide-react";
 import { adminService, missionsService } from "@/services";
-import type { PlayerMissionStatusResponse } from "@/services/types";
+import type { MissionStatusResponse, PlayerMissionStatusResponse } from "@/services/types";
 import { toast } from "@/hooks/use-toast";
 import ResetProgressDialog from "./ResetProgressDialog";
 
-const STATUS_APPROVED = "APPROVED";
+interface PhotoViewerState {
+  playerId: number;
+  username: string;
+  mission: MissionStatusResponse;
+}
 
 const AdminDashboard = () => {
   const [data, setData] = useState<PlayerMissionStatusResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [resetOpen, setResetOpen] = useState(false);
+  const [viewer, setViewer] = useState<PhotoViewerState | null>(null);
+  const [viewerPhoto, setViewerPhoto] = useState<string | null>(null);
+  const [viewerLoading, setViewerLoading] = useState(false);
 
   const load = useCallback(async (signal?: AbortSignal) => {
     setLoading(true);
@@ -34,6 +41,46 @@ const AdminDashboard = () => {
     return () => ctrl.abort();
   }, [load]);
 
+  // Fetch photo data when viewer opens.
+  useEffect(() => {
+    if (!viewer) {
+      setViewerPhoto(null);
+      return;
+    }
+    const ctrl = new AbortController();
+    setViewerLoading(true);
+    setViewerPhoto(null);
+    (async () => {
+      try {
+        // Prefer the photoUrl already returned by the admin endpoint.
+        let blobUrl = viewer.mission.photoUrl;
+        if (!blobUrl) {
+          const meta = await missionsService.getPhoto(
+            viewer.playerId,
+            viewer.mission.missionId,
+            ctrl.signal
+          );
+          blobUrl = meta?.blobUrl ?? "";
+        }
+        if (!blobUrl) {
+          setViewerPhoto(null);
+          return;
+        }
+        if (blobUrl.startsWith("data:")) {
+          setViewerPhoto(blobUrl);
+        } else {
+          const dataUrl = await missionsService.fetchPhotoData(blobUrl, ctrl.signal);
+          setViewerPhoto(dataUrl);
+        }
+      } catch {
+        setViewerPhoto(null);
+      } finally {
+        setViewerLoading(false);
+      }
+    })();
+    return () => ctrl.abort();
+  }, [viewer]);
+
   const handleReset = useCallback(async () => {
     try {
       const result = await missionsService.adminReset();
@@ -51,7 +98,6 @@ const AdminDashboard = () => {
     }
   }, [load]);
 
-  // Build mission column list from the first player (all players share missions).
   const missionCols = data[0]?.missions ?? [];
 
   return (
@@ -61,7 +107,7 @@ const AdminDashboard = () => {
           <div>
             <h1 className="font-heading text-3xl text-foreground">Painel de administração</h1>
             <p className="mt-1 font-body text-sm italic text-muted-foreground">
-              Vista geral do progresso de cada exploradora.
+              Vista geral do progresso de cada exploradora. Clica numa missão completa para ver a foto.
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -127,7 +173,19 @@ const AdminDashboard = () => {
                       </td>
                       {player.missions.map((m) => (
                         <td key={m.missionId} className="px-3 py-3 text-center">
-                          <StatusCell status={m} />
+                          <StatusCell
+                            status={m}
+                            onView={
+                              m.completed
+                                ? () =>
+                                    setViewer({
+                                      playerId: player.playerId,
+                                      username: player.username,
+                                      mission: m,
+                                    })
+                                : undefined
+                            }
+                          />
                         </td>
                       ))}
                       <td className="px-3 py-3 text-center font-body text-sm font-semibold text-foreground">
@@ -143,30 +201,38 @@ const AdminDashboard = () => {
       </div>
 
       <ResetProgressDialog open={resetOpen} onOpenChange={setResetOpen} onConfirm={handleReset} />
+
+      {viewer && (
+        <PhotoViewer
+          state={viewer}
+          photo={viewerPhoto}
+          loading={viewerLoading}
+          onClose={() => setViewer(null)}
+        />
+      )}
     </div>
   );
 };
 
 interface StatusCellProps {
-  status: {
-    completed: boolean;
-    completedAt: string;
-    validationStatus: string;
-  };
+  status: MissionStatusResponse;
+  onView?: () => void;
 }
 
-const StatusCell = ({ status }: StatusCellProps) => {
+const StatusCell = ({ status, onView }: StatusCellProps) => {
   if (status.completed) {
     const when = status.completedAt
       ? new Date(status.completedAt).toLocaleString("pt-PT")
       : "";
     return (
-      <span
-        title={`Completa${when ? ` · ${when}` : ""}`}
-        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary"
+      <button
+        type="button"
+        onClick={onView}
+        title={`Ver foto${when ? ` · ${when}` : ""}`}
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary transition hover:bg-primary/25 active:scale-90"
       >
         <Check size={14} />
-      </span>
+      </button>
     );
   }
   if (status.validationStatus && status.validationStatus !== "NONE") {
@@ -186,6 +252,76 @@ const StatusCell = ({ status }: StatusCellProps) => {
     >
       <Minus size={14} />
     </span>
+  );
+};
+
+interface PhotoViewerProps {
+  state: PhotoViewerState;
+  photo: string | null;
+  loading: boolean;
+  onClose: () => void;
+}
+
+const PhotoViewer = ({ state, photo, loading, onClose }: PhotoViewerProps) => {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
+  const when = state.mission.completedAt
+    ? new Date(state.mission.completedAt).toLocaleString("pt-PT")
+    : "";
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/70 px-4 fade-in"
+      onClick={onClose}
+    >
+      <div
+        className="relative w-full max-w-md overflow-hidden rounded-xl bg-background shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Fechar"
+          className="absolute right-3 top-3 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow active:scale-90"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="flex aspect-[4/3] w-full items-center justify-center bg-muted">
+          {loading ? (
+            <span className="font-body text-sm text-muted-foreground">A carregar foto...</span>
+          ) : photo ? (
+            <img
+              src={photo}
+              alt={`Prova de ${state.username} — missão ${state.mission.missionId}`}
+              className="h-full w-full object-cover"
+            />
+          ) : (
+            <span className="font-body text-sm text-muted-foreground">Sem foto disponível.</span>
+          )}
+        </div>
+
+        <div className="p-5">
+          <p className="font-body text-xs uppercase tracking-[0.2em] text-muted-foreground">
+            {state.username} · Missão {state.mission.missionId}
+          </p>
+          <h3 className="mt-1 font-heading text-xl font-bold text-foreground">
+            {state.mission.title}
+          </h3>
+          {when && (
+            <p className="mt-2 font-body text-xs italic text-muted-foreground">
+              Completa a {when}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
   );
 };
 
