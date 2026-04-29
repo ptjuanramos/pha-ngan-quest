@@ -17,6 +17,8 @@ export default defineConfig(({ mode }) => ({
     mode === "development" &&
       componentTagger({
         jsxSource: false,
+        tailwindConfig: true,
+        virtualOverrides: true,
       }),
   ].filter(Boolean),
   resolve: {
