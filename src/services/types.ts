@@ -98,3 +98,18 @@ export interface ResetProgressResponse {
   deletedCompletions: number;
   deletedPhotos: number;
 }
+
+export interface MissionStatusResponse {
+  missionId: number;
+  title: string;
+  completed: boolean;
+  completedAt: string;
+  photoUrl: string;
+  validationStatus: string;
+}
+
+export interface PlayerMissionStatusResponse {
+  playerId: number;
+  username: string;
+  missions: MissionStatusResponse[];
+}

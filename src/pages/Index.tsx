@@ -8,6 +8,7 @@ import CompletedMissionModal from "@/components/CompletedMissionModal";
 import SignatureMoment from "@/components/SignatureMoment";
 import QuestComplete from "@/components/QuestComplete";
 import AdminBadge from "@/components/AdminBadge";
+import AdminDashboard from "@/components/AdminDashboard";
 import ResetProgressDialog from "@/components/ResetProgressDialog";
 import { missionsService, playersService } from "@/services";
 import { mergeMissionsWithCompletions } from "@/services/missionsService";
@@ -244,6 +245,16 @@ const Index = () => {
     return (
       <div className="paper-texture min-h-screen">
         <LoginScreen />
+      </div>
+    );
+  }
+
+  // Admins go straight to the overview dashboard — they don't play the quest.
+  if (isAdmin) {
+    return (
+      <div className="paper-texture min-h-screen">
+        <AdminBadge />
+        <AdminDashboard />
       </div>
     );
   }
