@@ -192,13 +192,19 @@ export const mockPlayersService = {
       throw new ApiError({ code: "INVALID", message: "Nome inválido." }, 400);
     }
     const players = getPlayers();
-    let entry = players[username.toLowerCase()];
+    const key = username.toLowerCase();
+    let entry = players[key];
+    const shouldBeAdmin = ADMIN_USERNAMES.has(key);
     if (!entry) {
       entry = {
         playerId: Math.floor(Math.random() * 1_000_000) + 1,
-        isAdmin: ADMIN_USERNAMES.has(username.toLowerCase()),
+        isAdmin: shouldBeAdmin,
       };
-      players[username.toLowerCase()] = entry;
+      players[key] = entry;
+      savePlayers(players);
+    } else if (entry.isAdmin !== shouldBeAdmin) {
+      entry.isAdmin = shouldBeAdmin;
+      players[key] = entry;
       savePlayers(players);
     }
     setCurrentPlayerId(entry.playerId);
